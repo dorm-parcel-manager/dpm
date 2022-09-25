@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"
+
+if [[ -z "$SERVICE" ]]; then
+  SERVICE=$1
+fi
+
+if [[ -z "$SERVICE" ]]; then
+  echo "usage: start <service>"
+  exit 1
+fi
+
+FILE=./cmd/$SERVICE/main.go
+if [ ! -f "$FILE" ]; then
+    echo "service $SERVICE does not exist"
+    exit 1
+fi
+
+air --build.cmd "go build -o ./tmp/$SERVICE ./cmd/$SERVICE/main.go" --build.bin "./tmp/$SERVICE"
