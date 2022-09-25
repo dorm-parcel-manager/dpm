@@ -27,6 +27,25 @@ func (s *userServiceServer) Hello(ctx context.Context, in *api.Empty) (*api.Empt
 	return &api.Empty{}, nil
 }
 
+func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *api.GetUserForAuthRequest) (*api.User, error) {
+	var user model.User
+	result := s.db.Where(&model.User{OauthID: in.OauthId}).First(&user)
+	if result.Error != nil {
+		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.WithStack(result.Error)
+		}
+		user.OauthID = in.OauthId
+		user.Email = in.Email
+		user.FirstName = in.FirstName
+		user.LastName = in.LastName
+		result = s.db.Create(&user)
+		if result.Error != nil {
+			return nil, errors.WithStack(result.Error)
+		}
+	}
+	return mapModelToApi(&user), nil
+}
+
 func (s *userServiceServer) GetUsers(ctx context.Context, in *api.Empty) (*api.UserList, error) {
 	var users []model.User
 	result := s.db.Find(&users)
@@ -36,15 +55,19 @@ func (s *userServiceServer) GetUsers(ctx context.Context, in *api.Empty) (*api.U
 
 	var apiUsers []*api.User
 	for _, user := range users {
-		apiUsers = append(apiUsers, &api.User{
-			Id:        int32(user.ID),
-			OauthId:   user.OauthID,
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			CreatedAt: timestamppb.New(user.CreatedAt),
-			UpdatedAt: timestamppb.New(user.UpdatedAt),
-		})
+		apiUsers = append(apiUsers, mapModelToApi(&user))
 	}
 	return &api.UserList{Users: apiUsers}, nil
+}
+
+func mapModelToApi(user *model.User) *api.User {
+	return &api.User{
+		Id:        int32(user.ID),
+		OauthId:   user.OauthID,
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		CreatedAt: timestamppb.New(user.CreatedAt),
+		UpdatedAt: timestamppb.New(user.UpdatedAt),
+	}
 }
