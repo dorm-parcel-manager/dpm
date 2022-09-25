@@ -1,9 +1,11 @@
 FROM golang:1.19 AS build
 WORKDIR /go/src
 
-COPY . .
+COPY go.mod go.sum ./
 
 RUN go mod download
+
+COPY . .
 
 ARG SERVICE
 ARG TARGETOS
