@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/dorm-parcel-manager/dpm/pkg/user/cmd"
 	"log"
+
+	"github.com/dorm-parcel-manager/dpm/pkg/user/cmd"
 )
 
 func main() {
