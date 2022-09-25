@@ -1,0 +1,9 @@
+.github
+tmp
+.air.toml
+.dockerignore
+.gitignore
+docker-compose.yaml
+Dockerfile
+generate_protos
+
