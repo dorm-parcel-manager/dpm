@@ -8,6 +8,7 @@ package cmd
 
 import (
 	"github.com/dorm-parcel-manager/dpm/pkg/api"
+	"github.com/dorm-parcel-manager/dpm/pkg/db"
 	"github.com/dorm-parcel-manager/dpm/pkg/server"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/config"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/service"
@@ -19,7 +20,12 @@ import (
 func InitializeServer() (*server.Server, error) {
 	configConfig := config.ProvideConfig()
 	serverConfig := configConfig.Server
-	userServiceServer := service.NewUserServiceServer()
+	dbConfig := configConfig.DB
+	gormDB, err := db.NewDb(dbConfig)
+	if err != nil {
+		return nil, err
+	}
+	userServiceServer := service.NewUserServiceServer(gormDB)
 	grpcServer := ProvideGrpcServer(userServiceServer)
 	serverServer := server.NewServer(serverConfig, grpcServer)
 	return serverServer, nil

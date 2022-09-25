@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Config struct {
@@ -28,6 +29,8 @@ func NewServer(config *Config, grpcServer *grpc.Server) *Server {
 }
 
 func (s *Server) Start() error {
+	reflection.Register(s.grpcServer)
+
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.config.Port))
 	if err != nil {
 		return errors.WithStack(err)

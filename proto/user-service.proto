@@ -9,28 +9,29 @@ import "utils.proto";
 
 service UserService {
   rpc Hello (Empty) returns (Empty) {}
-  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {}
+  rpc GetUserForAuth (GetUserForAuthRequest) returns (User) {}
+  rpc GetUsers (Empty) returns (UserList) {}
 }
 
-message CreateUserRequest {
+message GetUserForAuthRequest {
   string oauth_id = 1;
   string email = 2;
   string first_name = 3;
   string last_name = 4;
 }
 
-message CreateUserResponse {
-  User user = 1;
-}
-
 message User {
-  int32 user_id = 1;
+  int32 id = 1;
   string oauth_id = 2;
   string email = 3;
   string first_name = 4;
   string last_name = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
+}
+
+message UserList {
+  repeated User users = 1;
 }
 
 enum UserType {

@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"github.com/dorm-parcel-manager/dpm/pkg/api"
+	"github.com/dorm-parcel-manager/dpm/pkg/db"
 	"github.com/dorm-parcel-manager/dpm/pkg/server"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/config"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/service"
@@ -16,6 +17,7 @@ func InitializeServer() (*server.Server, error) {
 	wire.Build(
 		config.ConfigSet,
 		server.NewServer,
+		db.NewDb,
 		ProvideGrpcServer,
 		service.NewUserServiceServer,
 	)
