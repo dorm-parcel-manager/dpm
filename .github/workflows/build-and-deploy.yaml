@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Build and Deploy
 
 on:
   workflow_dispatch:
@@ -11,7 +11,6 @@ on:
           - user
 
 env:
-  CACHE_REPO: ghcr.io/${{ github.repository }}
   IMAGE_REPO: ghcr.io/${{ github.repository }}/${{ github.event.inputs.service }}
 
 jobs:
@@ -38,7 +37,7 @@ jobs:
           images: ${{ env.IMAGE_REPO }}
 
       - name: Build and push to GitHub Packages
-        id: buil
+        id: build
         uses: docker/build-push-action@v3.1.1
         with:
           context: .
@@ -53,5 +52,14 @@ jobs:
         id: images
         run: |
           NEWIMAGE=${{ env.IMAGE_REPO }}@${{ steps.build.outputs.digest }}
-          IMAGES="[{\"environment\":\"prod\",\"target\": \"backend\",\"newImage\":\"$NEWIMAGE\"}]"
+          IMAGES="[{\"namespace\":\"services\",\"target\": \"${{ github.event.inputs.service }}\",\"newImage\":\"$NEWIMAGE\"}]"
           echo "::set-output name=images::$(echo $IMAGES | base64 -w 0)"
+
+      - name: Update images
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Update Images
+          repo: dorm-parcel-manager/gitops
+          ref: refs/heads/master
+          token: ${{ secrets.DISPATCH_PAT }}
+          inputs: '{ "images": "${{ steps.images.outputs.images }}", "name": "Deploy Bot", "email": "112172550+rockers-growths@users.noreply.github.com" }'
