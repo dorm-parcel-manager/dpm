@@ -62,4 +62,4 @@ jobs:
           repo: dorm-parcel-manager/gitops
           ref: refs/heads/master
           token: ${{ secrets.DISPATCH_PAT }}
-          inputs: '{ "images": "${{ steps.images.outputs.images }}", "name": "Deploy Bot", "email": "112172550+rockers-growths@users.noreply.github.com" }'
+          inputs: '{ "images": "${{ steps.images.outputs.images }}", "name": "github-actions[bot]", "email": "github-actions[bot]@users.noreply.github.com" }'
