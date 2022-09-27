@@ -4,8 +4,8 @@
 package cmd
 
 import (
-	"github.com/dorm-parcel-manager/dpm/pkg/api"
 	"github.com/dorm-parcel-manager/dpm/pkg/db"
+	"github.com/dorm-parcel-manager/dpm/pkg/pb"
 	"github.com/dorm-parcel-manager/dpm/pkg/server"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/config"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/service"
@@ -24,8 +24,8 @@ func InitializeServer() (*server.Server, error) {
 	return &server.Server{}, nil
 }
 
-func ProvideGrpcServer(userService api.UserServiceServer) *grpc.Server {
+func ProvideGrpcServer(userService pb.UserServiceServer) *grpc.Server {
 	s := grpc.NewServer()
-	api.RegisterUserServiceServer(s, userService)
+	pb.RegisterUserServiceServer(s, userService)
 	return s
 }

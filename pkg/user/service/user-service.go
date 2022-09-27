@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/dorm-parcel-manager/dpm/pkg/api"
+	"github.com/dorm-parcel-manager/dpm/pkg/pb"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/model"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -11,23 +11,23 @@ import (
 )
 
 type userServiceServer struct {
-	api.UnimplementedUserServiceServer
+	pb.UnimplementedUserServiceServer
 
 	db *gorm.DB
 }
 
-func NewUserServiceServer(db *gorm.DB) api.UserServiceServer {
+func NewUserServiceServer(db *gorm.DB) pb.UserServiceServer {
 	db.AutoMigrate(&model.User{})
 	return &userServiceServer{
 		db: db,
 	}
 }
 
-func (s *userServiceServer) Hello(ctx context.Context, in *api.Empty) (*api.Empty, error) {
-	return &api.Empty{}, nil
+func (s *userServiceServer) Hello(ctx context.Context, in *pb.Empty) (*pb.Empty, error) {
+	return &pb.Empty{}, nil
 }
 
-func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *api.GetUserForAuthRequest) (*api.User, error) {
+func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserForAuthRequest) (*pb.User, error) {
 	var user model.User
 	result := s.db.Where(&model.User{OauthID: in.OauthId}).First(&user)
 	if result.Error != nil {
@@ -46,22 +46,22 @@ func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *api.GetUserF
 	return mapModelToApi(&user), nil
 }
 
-func (s *userServiceServer) GetUsers(ctx context.Context, in *api.Empty) (*api.UserList, error) {
+func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.Empty) (*pb.UserList, error) {
 	var users []model.User
 	result := s.db.Find(&users)
 	if result.Error != nil {
 		return nil, errors.WithStack(result.Error)
 	}
 
-	var apiUsers []*api.User
+	var apiUsers []*pb.User
 	for _, user := range users {
 		apiUsers = append(apiUsers, mapModelToApi(&user))
 	}
-	return &api.UserList{Users: apiUsers}, nil
+	return &pb.UserList{Users: apiUsers}, nil
 }
 
-func mapModelToApi(user *model.User) *api.User {
-	return &api.User{
+func mapModelToApi(user *model.User) *pb.User {
+	return &pb.User{
 		Id:        int32(user.ID),
 		OauthId:   user.OauthID,
 		Email:     user.Email,

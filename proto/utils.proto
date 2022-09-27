@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option go_package = "github.com/dorm-parcel-manager/dpm/pkg/api";
+option go_package = "github.com/dorm-parcel-manager/dpm/pkg/pb";
 
-package api;
+package pb;
 
 message Empty {
 
