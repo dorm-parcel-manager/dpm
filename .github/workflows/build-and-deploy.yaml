@@ -44,7 +44,7 @@ jobs:
           context: .
           platforms: linux/arm64
           tags: ${{ env.IMAGE_REPO }}
-          build-args: SERVICE=user
+          build-args: SERVICE=${{ github.event.inputs.service }}
           push: true
 
       - name: Prepare image list
