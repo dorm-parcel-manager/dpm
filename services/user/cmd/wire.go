@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func InitializeServer() (*server.Server, error) {
+func InitializeServer() (*server.Server, func(), error) {
 	wire.Build(
 		config.ConfigSet,
 		server.NewServer,
@@ -21,7 +21,7 @@ func InitializeServer() (*server.Server, error) {
 		ProvideGrpcServer,
 		service.NewUserServiceServer,
 	)
-	return &server.Server{}, nil
+	return &server.Server{}, nil, nil
 }
 
 func ProvideGrpcServer(userService pb.UserServiceServer) *grpc.Server {

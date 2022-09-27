@@ -17,10 +17,12 @@ services:
     entrypoint: /app/start
     environment:
       - SERVICE=user
+      - SERVER_PORT=4000
+      - CLIENT_PARCELSERVICEURL=user:4000
       - DB_HOST=db
       - DB_PORT=5432
     ports:
-      - "4001:4001"
+      - "4001:4000"
     volumes:
       - ./:/app
   parcel:
@@ -29,7 +31,9 @@ services:
     entrypoint: /app/start
     environment:
       - SERVICE=parcel
+      - SERVER_PORT=4000
+      - CLIENT_USERSERVICEURL=user:4000
     ports:
-      - "4002:4002"
+      - "4002:4000"
     volumes:
       - ./:/app

@@ -7,6 +7,7 @@
 package cmd
 
 import (
+	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/config"
@@ -16,16 +17,24 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeServer() (*server.Server, error) {
+func InitializeServer() (*server.Server, func(), error) {
 	configConfig := config.ProvideConfig()
 	serverConfig := configConfig.Server
-	parcelServiceServer, err := service.NewParcelServiceServer()
+	clientConfig := configConfig.Client
+	userServiceClient, cleanup, err := client.ProvideUserServiceClient(clientConfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	parcelServiceServer, err := service.NewParcelServiceServer(userServiceClient)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
 	}
 	grpcServer := ProvideGrpcServer(parcelServiceServer)
 	serverServer := server.NewServer(serverConfig, grpcServer)
-	return serverServer, nil
+	return serverServer, func() {
+		cleanup()
+	}, nil
 }
 
 // wire.go:

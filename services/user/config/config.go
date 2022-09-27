@@ -3,6 +3,7 @@ package config
 import (
 	"strings"
 
+	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/dorm-parcel-manager/dpm/common/db"
 	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/google/wire"
@@ -11,18 +12,22 @@ import (
 
 type Config struct {
 	Server *server.Config
+	Client *client.Config
 	DB     *db.Config
 }
 
 var ConfigSet = wire.NewSet(
 	ProvideConfig,
-	wire.FieldsOf(new(*Config), "Server", "DB"),
+	wire.FieldsOf(new(*Config), "Server", "Client", "DB"),
 )
 
 func ProvideConfig() *Config {
 	config := Config{}
 
 	viper.SetDefault("server.port", 4001)
+
+	viper.SetDefault("client.parcelserviceurl", "localhost:4002")
+
 	viper.SetDefault("db.host", "localhost")
 	viper.SetDefault("db.port", "5434")
 	viper.SetDefault("db.user", "dpm")

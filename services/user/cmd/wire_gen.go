@@ -17,21 +17,22 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeServer() (*server.Server, error) {
+func InitializeServer() (*server.Server, func(), error) {
 	configConfig := config.ProvideConfig()
 	serverConfig := configConfig.Server
 	dbConfig := configConfig.DB
 	gormDB, err := db.NewDb(dbConfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	userServiceServer, err := service.NewUserServiceServer(gormDB)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	grpcServer := ProvideGrpcServer(userServiceServer)
 	serverServer := server.NewServer(serverConfig, grpcServer)
-	return serverServer, nil
+	return serverServer, func() {
+	}, nil
 }
 
 // wire.go:

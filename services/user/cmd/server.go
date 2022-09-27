@@ -5,11 +5,12 @@ import (
 )
 
 func RunServer() error {
-	server, err := InitializeServer()
+	server, cleanup, err := InitializeServer()
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	err = server.Start()
+	defer cleanup()
 	if err != nil {
 		return errors.WithStack(err)
 	}

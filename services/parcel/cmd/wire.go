@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/config"
@@ -12,14 +13,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-func InitializeServer() (*server.Server, error) {
+func InitializeServer() (*server.Server, func(), error) {
 	wire.Build(
 		config.ConfigSet,
 		server.NewServer,
+		client.Providers,
 		ProvideGrpcServer,
 		service.NewParcelServiceServer,
 	)
-	return &server.Server{}, nil
+	return &server.Server{}, nil, nil
 }
 
 func ProvideGrpcServer(parcelService pb.ParcelServiceServer) *grpc.Server {
