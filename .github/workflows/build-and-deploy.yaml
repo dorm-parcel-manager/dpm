@@ -44,8 +44,6 @@ jobs:
           platforms: linux/arm64
           tags: ${{ env.IMAGE_REPO }}
           build-args: SERVICE=user
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           push: true
 
       - name: Prepare image list
