@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "github.com/dorm-parcel-manager/dpm/pkg/pb";
+
+package pb;
+
+import "utils.proto";
+
+service ParcelService {
+  rpc Hello (HelloRequest) returns (HelloResponse) {}
+}

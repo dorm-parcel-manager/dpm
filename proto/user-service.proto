@@ -8,7 +8,7 @@ import "google/protobuf/timestamp.proto";
 import "utils.proto";
 
 service UserService {
-  rpc Hello (Empty) returns (Empty) {}
+  rpc Hello (HelloRequest) returns (HelloResponse) {}
   rpc GetUserForAuth (GetUserForAuthRequest) returns (User) {}
   rpc GetUsers (Empty) returns (UserList) {}
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/dorm-parcel-manager/dpm/pkg/pb"
 	"github.com/dorm-parcel-manager/dpm/pkg/user/model"
@@ -26,8 +27,11 @@ func NewUserServiceServer(db *gorm.DB) (pb.UserServiceServer, error) {
 	}, nil
 }
 
-func (s *userServiceServer) Hello(ctx context.Context, in *pb.Empty) (*pb.Empty, error) {
-	return &pb.Empty{}, nil
+func (s *userServiceServer) Hello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloResponse, error) {
+	message := fmt.Sprintf("Hello %v!", in.Name)
+	return &pb.HelloResponse{
+		Message: message,
+	}, nil
 }
 
 func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserForAuthRequest) (*pb.User, error) {
