@@ -23,3 +23,13 @@ services:
       - "4001:4001"
     volumes:
       - ./:/app
+  parcel:
+    image: cosmtrek/air
+    working_dir: /app
+    entrypoint: /app/start
+    environment:
+      - SERVICE=parcel
+    ports:
+      - "4002:4002"
+    volumes:
+      - ./:/app
