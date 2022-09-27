@@ -25,7 +25,10 @@ func InitializeServer() (*server.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	userServiceServer := service.NewUserServiceServer(gormDB)
+	userServiceServer, err := service.NewUserServiceServer(gormDB)
+	if err != nil {
+		return nil, err
+	}
 	grpcServer := ProvideGrpcServer(userServiceServer)
 	serverServer := server.NewServer(serverConfig, grpcServer)
 	return serverServer, nil

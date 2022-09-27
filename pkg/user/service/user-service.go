@@ -16,11 +16,14 @@ type userServiceServer struct {
 	db *gorm.DB
 }
 
-func NewUserServiceServer(db *gorm.DB) pb.UserServiceServer {
-	db.AutoMigrate(&model.User{})
+func NewUserServiceServer(db *gorm.DB) (pb.UserServiceServer, error) {
+	err := db.AutoMigrate(&model.User{})
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 	return &userServiceServer{
 		db: db,
-	}
+	}, nil
 }
 
 func (s *userServiceServer) Hello(ctx context.Context, in *pb.Empty) (*pb.Empty, error) {
