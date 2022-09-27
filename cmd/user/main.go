@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/dorm-parcel-manager/dpm/pkg/user/cmd"
+	"github.com/dorm-parcel-manager/dpm/services/user/cmd"
 )
 
 func main() {

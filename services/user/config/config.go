@@ -3,8 +3,8 @@ package config
 import (
 	"strings"
 
-	"github.com/dorm-parcel-manager/dpm/pkg/db"
-	"github.com/dorm-parcel-manager/dpm/pkg/server"
+	"github.com/dorm-parcel-manager/dpm/common/db"
+	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )
@@ -22,7 +22,7 @@ var ConfigSet = wire.NewSet(
 func ProvideConfig() *Config {
 	config := Config{}
 
-	viper.SetDefault("server.port", 4002)
+	viper.SetDefault("server.port", 4001)
 	viper.SetDefault("db.host", "localhost")
 	viper.SetDefault("db.port", "5434")
 	viper.SetDefault("db.user", "dpm")

@@ -4,11 +4,11 @@
 package cmd
 
 import (
-	"github.com/dorm-parcel-manager/dpm/pkg/db"
-	"github.com/dorm-parcel-manager/dpm/pkg/pb"
-	"github.com/dorm-parcel-manager/dpm/pkg/server"
-	"github.com/dorm-parcel-manager/dpm/pkg/user/config"
-	"github.com/dorm-parcel-manager/dpm/pkg/user/service"
+	"github.com/dorm-parcel-manager/dpm/common/db"
+	"github.com/dorm-parcel-manager/dpm/common/pb"
+	"github.com/dorm-parcel-manager/dpm/common/server"
+	"github.com/dorm-parcel-manager/dpm/services/user/config"
+	"github.com/dorm-parcel-manager/dpm/services/user/service"
 	"github.com/google/wire"
 	"google.golang.org/grpc"
 )

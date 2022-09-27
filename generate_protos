@@ -2,7 +2,9 @@
 
 cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"
 
-rm -rf ./pkg/pb
-mkdir -p ./pkg/pb
+TARGET=./common/pb
 
-protoc --go_out=./pkg/pb --go_opt=paths=source_relative --go-grpc_out=./pkg/pb --go-grpc_opt=paths=source_relative $(find ./proto -iname "*.proto") --proto_path=./proto
+rm -rf $TARGET
+mkdir -p $TARGET
+
+protoc --go_out=$TARGET --go_opt=paths=source_relative --go-grpc_out=$TARGET --go-grpc_opt=paths=source_relative $(find ./proto -iname "*.proto") --proto_path=./proto

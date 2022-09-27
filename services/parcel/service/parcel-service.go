@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/dorm-parcel-manager/dpm/pkg/pb"
+	"github.com/dorm-parcel-manager/dpm/common/pb"
 )
 
 type parcelServiceServer struct {

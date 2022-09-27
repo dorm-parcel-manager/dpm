@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dorm-parcel-manager/dpm/pkg/pb"
-	"github.com/dorm-parcel-manager/dpm/pkg/user/model"
+	"github.com/dorm-parcel-manager/dpm/common/pb"
+	"github.com/dorm-parcel-manager/dpm/services/user/model"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
