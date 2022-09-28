@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/dorm-parcel-manager/dpm/common/appcontext"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/services/user/model"
 	"github.com/pkg/errors"
@@ -53,6 +54,12 @@ func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserFo
 }
 
 func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireAdmin()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	var users []model.User
 	result := s.db.Find(&users)
 	if result.Error != nil {
