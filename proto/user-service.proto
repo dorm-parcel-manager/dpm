@@ -10,6 +10,7 @@ import "common.proto";
 service UserService {
   rpc Hello (HelloRequest) returns (HelloResponse) {}
   rpc GetUserForAuth (GetUserForAuthRequest) returns (User) {}
+  rpc GetUserInfo (GetUserInfoRequest) returns (UserInfo) {}
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse) {}
 }
 
@@ -26,8 +27,21 @@ message User {
   string email = 3;
   string first_name = 4;
   string last_name = 5;
+  UserType type = 8;
+
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
+}
+
+message GetUserInfoRequest {
+  uint32 id = 1;
+}
+
+message UserInfo {
+  uint32 id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  UserType type = 4;
 }
 
 message GetUsersRequest {

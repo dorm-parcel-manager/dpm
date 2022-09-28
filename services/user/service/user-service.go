@@ -7,6 +7,8 @@ import (
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/services/user/model"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
@@ -53,6 +55,23 @@ func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserFo
 	return mapModelToApi(&user), nil
 }
 
+func (s *userServiceServer) GetUserInfo(ctx context.Context, in *pb.GetUserInfoRequest) (*pb.UserInfo, error) {
+	var user model.User
+	result := s.db.Where(&model.User{ID: uint(in.Id)}).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, status.Errorf(codes.NotFound, "user id %v not found", in.Id)
+		}
+		return nil, result.Error
+	}
+	return &pb.UserInfo{
+		Id:        uint32(user.ID),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Type:      user.Type,
+	}, nil
+}
+
 func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()
@@ -80,6 +99,7 @@ func mapModelToApi(user *model.User) *pb.User {
 		Email:     user.Email,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
+		Type:      user.Type,
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: timestamppb.New(user.UpdatedAt),
 	}
