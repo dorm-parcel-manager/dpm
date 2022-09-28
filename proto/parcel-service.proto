@@ -4,7 +4,7 @@ option go_package = "github.com/dorm-parcel-manager/dpm/common/pb";
 
 package pb;
 
-import "utils.proto";
+import "common.proto";
 
 service ParcelService {
   rpc Hello (HelloRequest) returns (HelloResponse) {}

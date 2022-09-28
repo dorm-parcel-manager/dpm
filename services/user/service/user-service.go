@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/services/user/model"
 	"github.com/pkg/errors"
@@ -53,7 +52,7 @@ func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserFo
 	return mapModelToApi(&user), nil
 }
 
-func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.Empty) (*pb.UserList, error) {
+func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
 	var users []model.User
 	result := s.db.Find(&users)
 	if result.Error != nil {
@@ -64,7 +63,7 @@ func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.Empty) (*pb.Use
 	for _, user := range users {
 		apiUsers = append(apiUsers, mapModelToApi(&user))
 	}
-	return &pb.UserList{Users: apiUsers}, nil
+	return &pb.GetUsersResponse{Users: apiUsers}, nil
 }
 
 func mapModelToApi(user *model.User) *pb.User {

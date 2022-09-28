@@ -5,12 +5,12 @@ option go_package = "github.com/dorm-parcel-manager/dpm/common/pb";
 package pb;
 
 import "google/protobuf/timestamp.proto";
-import "utils.proto";
+import "common.proto";
 
 service UserService {
   rpc Hello (HelloRequest) returns (HelloResponse) {}
   rpc GetUserForAuth (GetUserForAuthRequest) returns (User) {}
-  rpc GetUsers (Empty) returns (UserList) {}
+  rpc GetUsers (GetUsersRequest) returns (GetUsersResponse) {}
 }
 
 message GetUserForAuthRequest {
@@ -30,12 +30,10 @@ message User {
   google.protobuf.Timestamp updated_at = 7;
 }
 
-message UserList {
-  repeated User users = 1;
+message GetUsersRequest {
+  Context context = 1;
 }
 
-enum UserType {
-  TYPE_STUDENT = 0;
-  TYPE_STAFF = 1;
-  TYPE_ADMIN = 2;
+message GetUsersResponse {
+  repeated User users = 1;
 }
