@@ -38,7 +38,7 @@ func (s *userServiceServer) Hello(ctx context.Context, in *pb.HelloRequest) (*pb
 
 func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserForAuthRequest) (*pb.User, error) {
 	var user model.User
-	result := s.db.Where(&model.User{OauthID: in.OauthId}).First(&user)
+	result := s.db.WithContext(ctx).Where(&model.User{OauthID: in.OauthId}).First(&user)
 	if result.Error != nil {
 		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.WithStack(result.Error)
@@ -47,7 +47,7 @@ func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserFo
 		user.Email = in.Email
 		user.FirstName = in.FirstName
 		user.LastName = in.LastName
-		result = s.db.Create(&user)
+		result = s.db.WithContext(ctx).Create(&user)
 		if result.Error != nil {
 			return nil, errors.WithStack(result.Error)
 		}
@@ -57,7 +57,7 @@ func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserFo
 
 func (s *userServiceServer) GetUserInfo(ctx context.Context, in *pb.GetUserInfoRequest) (*pb.UserInfo, error) {
 	var user model.User
-	result := s.db.Where(&model.User{ID: uint(in.Id)}).First(&user)
+	result := s.db.WithContext(ctx).Where(&model.User{ID: uint(in.Id)}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "user id %v not found", in.Id)
@@ -80,7 +80,7 @@ func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.GetUsersRequest
 	}
 
 	var users []model.User
-	result := s.db.Find(&users)
+	result := s.db.WithContext(ctx).Find(&users)
 	if result.Error != nil {
 		return nil, errors.WithStack(result.Error)
 	}
@@ -100,7 +100,7 @@ func (s *userServiceServer) GetUser(ctx context.Context, in *pb.GetUserRequest) 
 	}
 
 	var user model.User
-	result := s.db.Where(&model.User{ID: uint(in.Id)}).First(&user)
+	result := s.db.WithContext(ctx).Where(&model.User{ID: uint(in.Id)}).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "user id %v not found", in.Id)
