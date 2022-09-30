@@ -14,6 +14,7 @@ service UserService {
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse) {}
   rpc GetUser (GetUserRequest) returns (GetUserResponse) {}
   rpc UpdateUser (UpdateUserRequest) returns (Empty) {}
+  rpc DeleteUser (DeleteUserRequest) returns (Empty) {}
 }
 
 message GetUserForAuthRequest {
@@ -74,4 +75,9 @@ message UpdateUserData {
   string first_name = 2;
   string last_name = 3;
   UserType type = 4;
+}
+
+message DeleteUserRequest {
+  Context context = 1;
+  uint32 id = 2;
 }

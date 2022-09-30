@@ -134,6 +134,20 @@ func (s *userServiceServer) UpdateUser(ctx context.Context, in *pb.UpdateUserReq
 	return &pb.Empty{}, nil
 }
 
+func (s *userServiceServer) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.Empty, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireAdmin()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	result := s.db.WithContext(ctx).Delete(&model.User{}, in.Id)
+	if result.Error != nil {
+		return nil, errors.WithStack(result.Error)
+	}
+	return &pb.Empty{}, nil
+}
+
 func mapModelToApi(user *model.User) *pb.User {
 	return &pb.User{
 		Id:        int32(user.ID),
