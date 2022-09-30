@@ -12,6 +12,7 @@ service UserService {
   rpc GetUserForAuth (GetUserForAuthRequest) returns (User) {}
   rpc GetUserInfo (GetUserInfoRequest) returns (UserInfo) {}
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse) {}
+  rpc GetUser (GetUserRequest) returns (GetUserResponse) {}
 }
 
 message GetUserForAuthRequest {
@@ -50,4 +51,13 @@ message GetUsersRequest {
 
 message GetUsersResponse {
   repeated User users = 1;
+}
+
+message GetUserRequest {
+  Context context = 1;
+  uint32 id = 2;
+}
+
+message GetUserResponse {
+  User user = 1;
 }

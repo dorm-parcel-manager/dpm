@@ -92,6 +92,26 @@ func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.GetUsersRequest
 	return &pb.GetUsersResponse{Users: apiUsers}, nil
 }
 
+func (s *userServiceServer) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireAdmin()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	var user model.User
+	result := s.db.Where(&model.User{ID: uint(in.Id)}).First(&user)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, status.Errorf(codes.NotFound, "user id %v not found", in.Id)
+		}
+	}
+
+	return &pb.GetUserResponse{
+		User: mapModelToApi(&user),
+	}, nil
+}
+
 func mapModelToApi(user *model.User) *pb.User {
 	return &pb.User{
 		Id:        int32(user.ID),
