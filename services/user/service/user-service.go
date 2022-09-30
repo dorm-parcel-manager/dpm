@@ -127,7 +127,9 @@ func (s *userServiceServer) UpdateUser(ctx context.Context, in *pb.UpdateUserReq
 		LastName:  data.LastName,
 		Type:      data.Type,
 	}
-	result := s.db.WithContext(ctx).Model(&user).Select("*").Updates(user)
+	result := s.db.WithContext(ctx).Model(&user).Select(
+		"Email", "FirstName", "LastName", "Type",
+	).Updates(user)
 	if result.Error != nil {
 		return nil, errors.WithStack(err)
 	}
