@@ -112,6 +112,28 @@ func (s *userServiceServer) GetUser(ctx context.Context, in *pb.GetUserRequest) 
 	}, nil
 }
 
+func (s *userServiceServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.Empty, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireAdmin()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	data := in.Data
+	user := &model.User{
+		ID:        uint(in.Id),
+		Email:     data.Email,
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+		Type:      data.Type,
+	}
+	result := s.db.WithContext(ctx).Model(&user).Select("*").Updates(user)
+	if result.Error != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &pb.Empty{}, nil
+}
+
 func mapModelToApi(user *model.User) *pb.User {
 	return &pb.User{
 		Id:        int32(user.ID),

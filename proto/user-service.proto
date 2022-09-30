@@ -13,6 +13,7 @@ service UserService {
   rpc GetUserInfo (GetUserInfoRequest) returns (UserInfo) {}
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse) {}
   rpc GetUser (GetUserRequest) returns (GetUserResponse) {}
+  rpc UpdateUser (UpdateUserRequest) returns (Empty) {}
 }
 
 message GetUserForAuthRequest {
@@ -60,4 +61,17 @@ message GetUserRequest {
 
 message GetUserResponse {
   User user = 1;
+}
+
+message UpdateUserRequest {
+  Context context = 1;
+  uint32 id = 2;
+  UpdateUserData data = 3;
+}
+
+message UpdateUserData {
+  string email = 1;
+  string first_name = 2;
+  string last_name = 3;
+  UserType type = 4;
 }
