@@ -39,6 +39,22 @@ services:
       - ./:/app
     depends_on:
       - user
+  notification:
+    image: cosmtrek/air
+    working_dir: /app
+    entrypoint: /app/start
+    environment:
+      - SERVICE=notification
+      - SERVER_PORT=4000
+      - DB_HOST=mongo
+      - DB_PORT=27017
+      - CLIENT_NOTIFICATIONSERVICEURL=user:4003
+    ports:
+      - "4003:4000"
+    volumes:
+      - ./:/app
+    depends_on:
+      - user
   mongo:
     image: mongo:6.0.2
     restart: unless-stopped
