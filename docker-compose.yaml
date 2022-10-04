@@ -39,3 +39,13 @@ services:
       - ./:/app
     depends_on:
       - user
+  mongo:
+    image: mongo:6.0.2
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    volumes:
+      - /var/lib/mongodb/data
+    ports:
+      - "27017:27017"
