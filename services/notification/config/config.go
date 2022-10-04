@@ -1,10 +1,10 @@
 package config
 
 import (
+	"github.com/dorm-parcel-manager/dpm/common/mongo"
 	"strings"
 
 	"github.com/dorm-parcel-manager/dpm/common/client"
-	"github.com/dorm-parcel-manager/dpm/common/db"
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )
@@ -12,7 +12,7 @@ import (
 type Config struct {
 	Server *serverConfig
 	Client *client.Config
-	DB     *db.Config
+	DB     *mongo.Config
 }
 
 type serverConfig struct {
@@ -32,9 +32,9 @@ func ProvideConfig() *Config {
 	viper.SetDefault("client.notificationserviceurl", "localhost:4003")
 
 	viper.SetDefault("db.host", "localhost")
-	viper.SetDefault("db.port", "5434")
-	viper.SetDefault("db.user", "dpm")
-	viper.SetDefault("db.password", "dpm")
+	viper.SetDefault("db.port", "27017")
+	viper.SetDefault("db.user", "mongo")
+	viper.SetDefault("db.password", "mongo")
 	viper.SetDefault("db.dbname", "dpm")
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
