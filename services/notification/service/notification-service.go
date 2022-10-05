@@ -55,7 +55,16 @@ func (s *NotificationService) ReadNotifications(c *gin.Context) {
 	c.JSON(200, results)
 }
 
+type MarkNotificationAsReadRequestBody struct {
+	Read bool `json:"read"`
+}
+
 func (s *NotificationService) MarkNotificationAsRead(c *gin.Context) {
+	reqBody := &MarkNotificationAsReadRequestBody{}
+	if err := c.ShouldBindJSON(reqBody); err != nil {
+		c.JSON(400, gin.H{"error": "request body must have only one boolean field 'read'"})
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	collection := s.db.Collection("notification")
@@ -67,7 +76,7 @@ func (s *NotificationService) MarkNotificationAsRead(c *gin.Context) {
 	filter := bson.D{{Key: "_id", Value: objId}}
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
-			{Key: "read", Value: true},
+			{Key: "read", Value: reqBody.Read},
 		}},
 	}
 	_, err = collection.UpdateOne(ctx, filter, update)
