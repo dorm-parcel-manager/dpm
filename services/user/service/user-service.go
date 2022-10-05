@@ -70,6 +70,7 @@ func (s *userServiceServer) GetUserInfo(ctx context.Context, in *pb.GetUserInfoR
 		Id:        uint32(user.ID),
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
+		Picture:   user.Picture,
 		Type:      user.Type,
 	}, nil
 }
