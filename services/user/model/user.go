@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"time"
+
+	"github.com/dorm-parcel-manager/dpm/common/pb"
 )
 
 type User struct {
@@ -11,6 +12,7 @@ type User struct {
 	Email     string
 	FirstName string
 	LastName  string
+	Picture   string
 	Type      pb.UserType
 
 	CreatedAt time.Time

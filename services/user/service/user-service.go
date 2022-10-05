@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/dorm-parcel-manager/dpm/common/appcontext"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/services/user/model"
@@ -47,6 +48,7 @@ func (s *userServiceServer) GetUserForAuth(ctx context.Context, in *pb.GetUserFo
 		user.Email = in.Email
 		user.FirstName = in.FirstName
 		user.LastName = in.LastName
+		user.Picture = in.Picture
 		result = s.db.WithContext(ctx).Create(&user)
 		if result.Error != nil {
 			return nil, errors.WithStack(result.Error)
@@ -125,6 +127,7 @@ func (s *userServiceServer) UpdateUser(ctx context.Context, in *pb.UpdateUserReq
 		Email:     data.Email,
 		FirstName: data.FirstName,
 		LastName:  data.LastName,
+		Picture:   data.Picture,
 		Type:      data.Type,
 	}
 	result := s.db.WithContext(ctx).Model(&user).Select(
@@ -157,6 +160,7 @@ func mapModelToApi(user *model.User) *pb.User {
 		Email:     user.Email,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
+		Picture:   user.Picture,
 		Type:      user.Type,
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: timestamppb.New(user.UpdatedAt),
