@@ -14,16 +14,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type notificationService struct {
+type NotificationService struct {
 	db              *mongo.Database
 	rabbitmqChannel *amqp.Channel
 }
 
-func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *notificationService {
-	return &notificationService{db, rabbitmqChannel}
+func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *NotificationService {
+	return &NotificationService{db, rabbitmqChannel}
 }
 
-func (s *notificationService) ReadNotifications(c *gin.Context) {
+func (s *NotificationService) ReadNotifications(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	collection := s.db.Collection("notification")
@@ -45,7 +45,7 @@ type MarkNotificationAsReadRequest struct {
 	Id string `json:"_id"`
 }
 
-func (s *notificationService) MarkNotificationAsRead(c *gin.Context) {
+func (s *NotificationService) MarkNotificationAsRead(c *gin.Context) {
 	req := MarkNotificationAsReadRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -73,7 +73,7 @@ func (s *notificationService) MarkNotificationAsRead(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "success"})
 }
 
-func (s *notificationService) ListenForRabbitmq() {
+func (s *NotificationService) ListenForRabbitmq() {
 	q, err := s.rabbitmqChannel.QueueDeclare(
 		rabbitmq.NOTIFICATION_QUEUE_NAME, // name
 		false,                            // durable

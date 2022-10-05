@@ -3,28 +3,25 @@ package config
 import (
 	"strings"
 
+	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/dorm-parcel-manager/dpm/common/mongo"
 	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
+	"github.com/dorm-parcel-manager/dpm/services/notification/server"
 
-	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Server   *serverConfig
+	Server   *server.Config
 	Client   *client.Config
 	DB       *mongo.Config
 	Rabbitmq *rabbitmq.Config
 }
 
-type serverConfig struct {
-	Port int
-}
-
 var ConfigSet = wire.NewSet(
 	ProvideConfig,
-	wire.FieldsOf(new(*Config), "Server", "Client", "DB"),
+	wire.FieldsOf(new(*Config), "Server", "Client", "DB", "Rabbitmq"),
 )
 
 func ProvideConfig() *Config {
