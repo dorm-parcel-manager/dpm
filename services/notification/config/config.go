@@ -1,8 +1,10 @@
 package config
 
 import (
-	"github.com/dorm-parcel-manager/dpm/common/mongo"
 	"strings"
+
+	"github.com/dorm-parcel-manager/dpm/common/mongo"
+	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
 
 	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/google/wire"
@@ -10,9 +12,10 @@ import (
 )
 
 type Config struct {
-	Server *serverConfig
-	Client *client.Config
-	DB     *mongo.Config
+	Server   *serverConfig
+	Client   *client.Config
+	DB       *mongo.Config
+	Rabbitmq *rabbitmq.Config
 }
 
 type serverConfig struct {
@@ -36,6 +39,11 @@ func ProvideConfig() *Config {
 	viper.SetDefault("db.user", "mongo")
 	viper.SetDefault("db.password", "mongo")
 	viper.SetDefault("db.dbname", "dpm")
+
+	viper.SetDefault("rabbitmq.host", "localhost")
+	viper.SetDefault("rabbitmq.port", "5672")
+	viper.SetDefault("rabbitmq.user", "dpm")
+	viper.SetDefault("rabbitmq.password", "dpm")
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()

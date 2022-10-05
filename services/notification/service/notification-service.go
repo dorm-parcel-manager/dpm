@@ -2,23 +2,28 @@ package service
 
 import (
 	"context"
+	"log"
 	"time"
 
+	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
+
 	"github.com/gin-gonic/gin"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type notificationServiceServer struct {
-	db *mongo.Database
+type notificationService struct {
+	db              *mongo.Database
+	rabbitmqChannel *amqp.Channel
 }
 
-func NewNotificationServiceServer(db *mongo.Database) *notificationServiceServer {
-	return &notificationServiceServer{db}
+func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *notificationService {
+	return &notificationService{db, rabbitmqChannel}
 }
 
-func (s *notificationServiceServer) ReadNotifications(c *gin.Context) {
+func (s *notificationService) ReadNotifications(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	collection := s.db.Collection("notification")
@@ -40,7 +45,7 @@ type MarkNotificationAsReadRequest struct {
 	Id string `json:"_id"`
 }
 
-func (s *notificationServiceServer) MarkNotificationAsRead(c *gin.Context) {
+func (s *notificationService) MarkNotificationAsRead(c *gin.Context) {
 	req := MarkNotificationAsReadRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -66,4 +71,50 @@ func (s *notificationServiceServer) MarkNotificationAsRead(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{"message": "success"})
+}
+
+func (s *notificationService) ListenForRabbitmq() {
+	q, err := s.rabbitmqChannel.QueueDeclare(
+		rabbitmq.NOTIFICATION_QUEUE_NAME, // name
+		false,                            // durable
+		false,                            // delete when unused
+		false,                            // exclusive
+		false,                            // no-wait
+		nil,                              // arguments
+	)
+	if err != nil {
+		log.Fatalf("Failed to declare a queue: %s", err)
+	}
+	msgs, err := s.rabbitmqChannel.Consume(
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		log.Fatalf("Failed to register a consumer: %s", err)
+	}
+	forever := make(chan bool)
+
+	go func() {
+		for d := range msgs {
+			notificationBody := rabbitmq.NotificationBody{}
+			err := bson.Unmarshal(d.Body, &notificationBody)
+			if err != nil {
+				log.Printf("Failed to unmarshal notification: %s", err)
+				continue
+			}
+			s.db.Collection("notification").InsertOne(context.Background(), bson.M{
+				"title":   notificationBody.Title,
+				"message": notificationBody.Message,
+				"link":    notificationBody.Link,
+				"read":    false,
+			})
+		}
+	}()
+
+	<-forever
 }
