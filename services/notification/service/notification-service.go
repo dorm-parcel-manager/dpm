@@ -23,11 +23,22 @@ func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *
 	return &NotificationService{db, rabbitmqChannel}
 }
 
+type ReadNotificationsRequest struct {
+	UserId string `json:"userId"`
+}
+
 func (s *NotificationService) ReadNotifications(c *gin.Context) {
+	req := ReadNotificationsRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "request body must have userId"})
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	collection := s.db.Collection("notification")
-	curr, err := collection.Find(ctx, bson.D{})
+	curr, err := collection.Find(ctx, bson.D{
+		{Key: "userId", Value: req.UserId},
+	})
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -37,6 +48,9 @@ func (s *NotificationService) ReadNotifications(c *gin.Context) {
 	if err = curr.All(ctx, &results); err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
+	}
+	if results == nil {
+		results = []bson.M{}
 	}
 	c.JSON(200, results)
 }
@@ -48,7 +62,7 @@ type MarkNotificationAsReadRequest struct {
 func (s *NotificationService) MarkNotificationAsRead(c *gin.Context) {
 	req := MarkNotificationAsReadRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": "request body must have _id"})
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -108,10 +122,12 @@ func (s *NotificationService) ListenForRabbitmq() {
 				continue
 			}
 			s.db.Collection("notification").InsertOne(context.Background(), bson.M{
-				"title":   notificationBody.Title,
-				"message": notificationBody.Message,
-				"link":    notificationBody.Link,
-				"read":    false,
+				"title":    notificationBody.Title,
+				"message":  notificationBody.Message,
+				"link":     notificationBody.Link,
+				"userId":   notificationBody.UserID,
+				"read":     false,
+				"unixTime": time.Now().Unix(),
 			})
 		}
 	}()
