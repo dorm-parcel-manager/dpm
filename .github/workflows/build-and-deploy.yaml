@@ -10,6 +10,7 @@ on:
         options:
           - user
           - parcel
+          - notification
 
 env:
   IMAGE_REPO: ghcr.io/${{ github.repository }}/${{ github.event.inputs.service }}
