@@ -27,7 +27,7 @@ type ReadNotificationsRequest struct {
 	UserId string `json:"userId"`
 }
 
-func (s *NotificationService) ReadNotifications(c *gin.Context) {
+func (s *NotificationService) GetNotifications(c *gin.Context) {
 	req := ReadNotificationsRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": "request body must have userId"})
@@ -59,7 +59,7 @@ type MarkNotificationAsReadRequestBody struct {
 	Read bool `json:"read"`
 }
 
-func (s *NotificationService) MarkNotificationAsRead(c *gin.Context) {
+func (s *NotificationService) PatchNotificationRead(c *gin.Context) {
 	reqBody := &MarkNotificationAsReadRequestBody{}
 	if err := c.ShouldBindJSON(reqBody); err != nil {
 		c.JSON(400, gin.H{"error": "request body must have only one boolean field 'read'"})
