@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
+	"github.com/dorm-parcel-manager/dpm/services/notification/model"
 
 	"github.com/gin-gonic/gin"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -23,21 +24,17 @@ func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *
 	return &NotificationService{db, rabbitmqChannel}
 }
 
-type ReadNotificationsRequest struct {
-	UserId string `json:"userId"`
-}
-
 func (s *NotificationService) GetNotifications(c *gin.Context) {
-	req := ReadNotificationsRequest{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "request body must have userId"})
+	userId := c.Request.Header.Get("User-Id")
+	if userId == "" {
+		c.JSON(400, gin.H{"error": "User-Id header is required"})
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	collection := s.db.Collection("notification")
 	curr, err := collection.Find(ctx, bson.D{
-		{Key: "userId", Value: req.UserId},
+		{Key: "userId", Value: userId},
 	})
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
@@ -60,6 +57,11 @@ type MarkNotificationAsReadRequestBody struct {
 }
 
 func (s *NotificationService) PatchNotificationRead(c *gin.Context) {
+	userId := c.Request.Header.Get("User-Id")
+	if userId == "" {
+		c.JSON(400, gin.H{"error": "User-Id header is required"})
+		return
+	}
 	reqBody := &MarkNotificationAsReadRequestBody{}
 	if err := c.ShouldBindJSON(reqBody); err != nil {
 		c.JSON(400, gin.H{"error": "request body must have only one boolean field 'read'"})
@@ -74,6 +76,20 @@ func (s *NotificationService) PatchNotificationRead(c *gin.Context) {
 		return
 	}
 	filter := bson.D{{Key: "_id", Value: objId}}
+	result := collection.FindOne(ctx, filter)
+	if result.Err() != nil {
+		c.JSON(404, gin.H{"error": "notification not found"})
+		return
+	}
+	var notification *model.Notification
+	if result.Decode(&notification) != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	if notification.UserID != userId {
+		c.JSON(403, gin.H{"error": "This user is not allowed to modify this notification"})
+		return
+	}
 	update := bson.D{
 		{Key: "$set", Value: bson.D{
 			{Key: "read", Value: reqBody.Read},
