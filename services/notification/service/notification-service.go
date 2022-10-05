@@ -55,20 +55,11 @@ func (s *NotificationService) ReadNotifications(c *gin.Context) {
 	c.JSON(200, results)
 }
 
-type MarkNotificationAsReadRequest struct {
-	Id string `json:"_id"`
-}
-
 func (s *NotificationService) MarkNotificationAsRead(c *gin.Context) {
-	req := MarkNotificationAsReadRequest{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": "request body must have _id"})
-		return
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	collection := s.db.Collection("notification")
-	objId, err := primitive.ObjectIDFromHex(req.Id)
+	objId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
