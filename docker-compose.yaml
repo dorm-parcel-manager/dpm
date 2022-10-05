@@ -65,3 +65,14 @@ services:
       - /var/lib/mongodb/data
     ports:
       - "27017:27017"
+  rabbitmq:
+    image: rabbitmq:3.9.23-management
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=dpm
+      - RABBITMQ_DEFAULT_PASS=dpm
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+    
