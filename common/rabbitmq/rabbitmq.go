@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"context"
 	"log"
-	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.mongodb.org/mongo-driver/bson"
@@ -39,13 +38,11 @@ type NotificationBody struct {
 
 const NOTIFICATION_QUEUE_NAME = "notification"
 
-func PublishNotification(channel *amqp.Channel, body *NotificationBody) error {
+func PublishNotification(ctx context.Context, channel *amqp.Channel, body *NotificationBody) error {
 	bodyBytes, err := bson.Marshal(body)
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 	return channel.PublishWithContext(ctx, "", NOTIFICATION_QUEUE_NAME, false, false, amqp.Publishing{
 		ContentType: "text/plain",
 		Body:        bodyBytes,
