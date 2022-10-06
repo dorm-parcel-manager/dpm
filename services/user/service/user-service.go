@@ -79,7 +79,7 @@ func (s *userServiceServer) GetUsers(ctx context.Context, in *pb.GetUsersRequest
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	var users []model.User
@@ -99,7 +99,7 @@ func (s *userServiceServer) GetUser(ctx context.Context, in *pb.GetUserRequest) 
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	var user model.User
@@ -119,7 +119,7 @@ func (s *userServiceServer) UpdateUser(ctx context.Context, in *pb.UpdateUserReq
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	data := in.Data
@@ -144,7 +144,7 @@ func (s *userServiceServer) DeleteUser(ctx context.Context, in *pb.DeleteUserReq
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	result := s.db.WithContext(ctx).Delete(&model.User{}, in.Id)
