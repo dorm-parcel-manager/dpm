@@ -14,6 +14,9 @@ service ParcelService {
   rpc CreateParcel (CreateParcelRequest) returns (Empty) {}
   rpc UpdateParcel (UpdateParcelRequest) returns (Empty) {}
   rpc DeleteParcel (DeleteParcelRequest) returns (Empty) {}
+  rpc StaffAcceptDelivery (StaffAcceptDeliveryRequest) returns (Empty) {}
+  rpc StudentClaimParcel (StudentClaimParcelRequest) returns (Empty) {}
+  rpc StaffomfirmClaimParcel (StaffConfirmClaimParcelRequest) returns (Empty) {}
 }
 
 message Parcel {
@@ -28,8 +31,9 @@ message Parcel {
 
 enum ParcelStatus {
   PARCEL_INAWAIT = 0;
-  PARCEL_RECIEVED = 1;
-  PARCEL_CLAIMED = 2;
+  PARCEL_ACCEPTED = 1;
+  PARCEL_STUDENT_CLAIMED = 2;
+  PARCEL_STAFF_CONFIRM_CLAIMED = 3;
 }
 
 message GetParcelsRequest {
@@ -78,6 +82,21 @@ message UpdateParcelData {
 }
 
 message DeleteParcelRequest {
+  Context context = 1;
+  uint32 id = 2;
+}
+
+message StaffAcceptDeliveryRequest {
+  Context context = 1;
+  uint32 id = 2;
+}
+
+message StudentClaimParcelRequest {
+  Context context = 1;
+  uint32 id = 2;
+}
+
+message StaffConfirmClaimParcelRequest {
   Context context = 1;
   uint32 id = 2;
 }

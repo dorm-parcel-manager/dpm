@@ -154,6 +154,73 @@ func (s *parcelServiceServer) DeleteParcel(ctx context.Context, in *pb.DeletePar
 	return &pb.Empty{}, nil
 }
 
+func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.StaffAcceptDeliveryRequest) (*pb.Empty, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireStaff()
+	if err != nil {
+		return nil, err
+	}
+
+	parcel := &model.Parcel{
+		ID:        			uint(in.Id),
+		Status: 			pb.ParcelStatus_PARCEL_ACCEPTED,
+	}
+
+	result := s.db.WithContext(ctx).Model(&parcel).Select(
+		"ID",
+	).Updates(parcel)
+
+	if result.Error != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &pb.Empty{}, nil
+}
+
+func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.StudentClaimParcelRequest) (*pb.Empty, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireStudent()
+	if err != nil {
+		return nil, err
+	}
+
+	parcel := &model.Parcel{
+		ID:        			uint(in.Id),
+		Status: 			pb.ParcelStatus_PARCEL_STUDENT_CLAIMED,
+	}
+
+	result := s.db.WithContext(ctx).Model(&parcel).Select(
+		"ID",
+	).Updates(parcel)
+
+	if result.Error != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &pb.Empty{}, nil
+}
+
+func (s *parcelServiceServer) StaffConfirmClaimParcel(ctx context.Context, in *pb.StaffConfirmClaimParcelRequest) (*pb.Empty, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireStaff()
+	if err != nil {
+		return nil, err
+	}
+
+	parcel := &model.Parcel{
+		ID:        			uint(in.Id),
+		Status: 			pb.ParcelStatus_PARCEL_STAFF_CONFIRM_CLAIMED,
+	}
+
+	result := s.db.WithContext(ctx).Model(&parcel).Select(
+		"ID",
+	).Updates(parcel)
+
+	if result.Error != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &pb.Empty{}, nil
+}
+
+
 func mapModelToApi(parcel *model.Parcel) *pb.Parcel {
 	return &pb.Parcel{
 		Id:        			int32(parcel.ID),

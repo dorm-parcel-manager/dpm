@@ -7,7 +7,7 @@ import (
 )
 
 type Parcel struct {
-	ID        			uint
+	ID        			uint 				`gorm:"primaryKey"`
 	Owner_ID			uint
 	Arrival_Date		time.Time
 	Transport_Company  	string
