@@ -51,7 +51,6 @@ message GetParcelResponse{
 
 message CreateParcelRequest {
   Context context = 1;
-  uint32 id = 2;
   CreateParcelData data = 3;
 }
 
