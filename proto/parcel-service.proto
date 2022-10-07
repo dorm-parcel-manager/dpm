@@ -58,7 +58,7 @@ message CreateParcelRequest {
 message CreateParcelData {
   int32 owner_id = 1;
   google.protobuf.Timestamp arrival_date = 2;
-  string shipment_company = 3;
+  string transport_company = 3;
   string tracking_number = 4;
   string sender = 5;
 }
@@ -72,7 +72,7 @@ message UpdateParcelRequest {
 message UpdateParcelData {
   int32 owner_id = 1;
   google.protobuf.Timestamp arrival_date = 2;
-  string shipment_company = 3;
+  string transport_company = 3;
   string tracking_number = 4;
   string sender = 5;
   ParcelStatus status = 6;
