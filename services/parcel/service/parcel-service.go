@@ -86,7 +86,7 @@ func (s *parcelServiceServer) GetParcel(ctx context.Context, in *pb.GetParcelReq
 	}, nil
 }
 
-func (s *parcelServiceServer) CreteParcel(ctx context.Context, in *pb.CreateParcelRequest) (*pb.Empty, error) {
+func (s *parcelServiceServer) CreateParcel(ctx context.Context, in *pb.CreateParcelRequest) (*pb.Empty, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireStudent()
 	if err != nil {
@@ -113,13 +113,16 @@ func (s *parcelServiceServer) CreteParcel(ctx context.Context, in *pb.CreateParc
 }
 
 func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdateParcelRequest) (*pb.Empty, error) {
+	fmt.Println("Update parcel")
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()
 	if err != nil {
 		return nil, err
 	}
-
+	
 	data := in.Data
+	fmt.Println(in.Id)
+	fmt.Println(data)
 	parcel := &model.Parcel{
 		ID:        			uint(in.Id),
 		Owner_ID:			uint(data.OwnerId),
@@ -130,9 +133,9 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 		Status: 			data.Status,
 	}
 
-	result := s.db.WithContext(ctx).Model(&parcel).Select(
-		"ID",
-	).Updates(parcel)
+	result := s.db.WithContext(ctx).Model(&parcel).Save(parcel)
+
+	fmt.Println(result)
 
 	if result.Error != nil {
 		return nil, errors.WithStack(err)
