@@ -113,7 +113,6 @@ func (s *parcelServiceServer) CreateParcel(ctx context.Context, in *pb.CreatePar
 }
 
 func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdateParcelRequest) (*pb.Empty, error) {
-	fmt.Println("Update parcel")
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()
 	if err != nil {
@@ -121,8 +120,6 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 	}
 	
 	data := in.Data
-	fmt.Println(in.Id)
-	fmt.Println(data)
 	parcel := &model.Parcel{
 		ID:        			uint(in.Id),
 		Owner_ID:			uint(data.OwnerId),
@@ -133,9 +130,7 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 		Status: 			data.Status,
 	}
 
-	result := s.db.WithContext(ctx).Model(&parcel).Save(parcel)
-
-	fmt.Println(result)
+	result := s.db.WithContext(ctx).Model(&parcel).Updates(parcel)
 
 	if result.Error != nil {
 		return nil, errors.WithStack(err)
@@ -170,7 +165,7 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Select(
-		"ID",
+		"Status",
 	).Updates(parcel)
 
 	if result.Error != nil {
@@ -192,7 +187,7 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Select(
-		"ID",
+		"Status",
 	).Updates(parcel)
 
 	if result.Error != nil {
@@ -214,7 +209,7 @@ func (s *parcelServiceServer) StaffConfirmClaimParcel(ctx context.Context, in *p
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Select(
-		"ID",
+		"Status",
 	).Updates(parcel)
 
 	if result.Error != nil {
