@@ -7,6 +7,7 @@
 package cmd
 
 import (
+	sd "github.com/dorm-parcel-manager/dpm/common/service-discovery"
 	"github.com/dorm-parcel-manager/dpm/common/db"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/common/server"
@@ -21,11 +22,12 @@ func InitializeServer() (*server.Server, func(), error) {
 	configConfig := config.ProvideConfig()
 	serverConfig := configConfig.Server
 	dbConfig := configConfig.DB
+	sdClint := sd.GetServiceDiscoveryClient()
 	gormDB, err := db.NewDb(dbConfig)
 	if err != nil {
 		return nil, nil, err
 	}
-	userServiceServer, err := service.NewUserServiceServer(gormDB)
+	userServiceServer, err := service.NewUserServiceServer(gormDB, sdClint)
 	if err != nil {
 		return nil, nil, err
 	}

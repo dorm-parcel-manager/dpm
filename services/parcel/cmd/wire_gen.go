@@ -7,12 +7,17 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"github.com/dorm-parcel-manager/dpm/common/client"
+	"github.com/dorm-parcel-manager/dpm/common/db"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/common/server"
-	"github.com/dorm-parcel-manager/dpm/common/db"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/config"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/service"
+	sd "github.com/dorm-parcel-manager/dpm/common/service-discovery"
 	"google.golang.org/grpc"
 )
 
@@ -22,12 +27,19 @@ func InitializeServer() (*server.Server, func(), error) {
 
 	configConfig := config.ProvideConfig()
 	serverConfig := configConfig.Server
-	clientConfig := configConfig.Client
+	//clientConfig := configConfig.Client
 
-	userServiceClient, cleanup, err := client.ProvideUserServiceClient(clientConfig)
+	sdClint := sd.GetServiceDiscoveryClient()
+	
+	userServiceClient, cleanup, err := client.ProvideUserServiceClient(sdClint)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	resp, _ := userServiceClient.Hello(ctx, &pb.HelloRequest{Name : "parcel-server",})
+	fmt.Println(resp)
 
 	dbConfig := configConfig.DB
 	gormDB, err := db.NewDb(dbConfig)
@@ -35,7 +47,7 @@ func InitializeServer() (*server.Server, func(), error) {
 		return nil, nil, err
 	}
 
-	parcelServiceServer, err := service.NewParcelServiceServer(gormDB, userServiceClient)
+	parcelServiceServer, err := service.NewParcelServiceServer(gormDB, userServiceClient, sdClint)
 	if err != nil {
 		cleanup()
 		return nil, nil, err

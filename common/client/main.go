@@ -2,8 +2,10 @@ package client
 
 import (
 	"github.com/dorm-parcel-manager/dpm/common/pb"
+	sd "github.com/dorm-parcel-manager/dpm/common/service-discovery"
 	"github.com/dorm-parcel-manager/dpm/common/utils"
 	"github.com/google/wire"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -23,8 +25,12 @@ var opts = []grpc.DialOption{
 	grpc.WithTransportCredentials(insecure.NewCredentials()),
 }
 
-func ProvideUserServiceClient(config *Config) (pb.UserServiceClient, func(), error) {
-	conn, err := grpc.Dial(config.UserServiceUrl, opts...)
+func ProvideUserServiceClient(sdClint *sd.ServiceDiscoveryClient) (pb.UserServiceClient, func(), error) {
+
+	url := sdClint.ServiceDiscovery(string(sd.ServiceName_USER_SERVICE))
+
+	conn, err := grpc.Dial(url, opts...)
+
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
@@ -32,8 +38,12 @@ func ProvideUserServiceClient(config *Config) (pb.UserServiceClient, func(), err
 	return client, utils.ErrorToFatal(conn.Close), nil
 }
 
-func ProvideParcelServiceClient(config *Config) (pb.ParcelServiceClient, func(), error) {
-	conn, err := grpc.Dial(config.ParcelServiceUrl, opts...)
+func ProvideParcelServiceClient(sdClint *sd.ServiceDiscoveryClient) (pb.ParcelServiceClient, func(), error) {
+	
+	url := sdClint.ServiceDiscovery(string(sd.ServiceName_USER_SERVICE))
+	
+	conn, err := grpc.Dial(url, opts...)
+
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}

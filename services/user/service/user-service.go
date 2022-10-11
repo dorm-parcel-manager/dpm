@@ -6,7 +6,9 @@ import (
 
 	"github.com/dorm-parcel-manager/dpm/common/appcontext"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
+	sd "github.com/dorm-parcel-manager/dpm/common/service-discovery"
 	"github.com/dorm-parcel-manager/dpm/services/user/model"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,11 +22,14 @@ type userServiceServer struct {
 	db *gorm.DB
 }
 
-func NewUserServiceServer(db *gorm.DB) (pb.UserServiceServer, error) {
+func NewUserServiceServer(db *gorm.DB, sdClint *sd.ServiceDiscoveryClient) (pb.UserServiceServer, error) {
 	err := db.AutoMigrate(&model.User{})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	sdClint.ServiceRegistry(string(sd.ServiceName_USER_SERVICE), "user", 4000, 4999)
+
 	return &userServiceServer{
 		db: db,
 	}, nil
