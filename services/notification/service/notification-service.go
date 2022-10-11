@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
 	"github.com/dorm-parcel-manager/dpm/services/notification/model"
+	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -25,8 +27,8 @@ func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *
 }
 
 func (s *NotificationService) GetNotifications(c *gin.Context) {
-	userId := c.Request.Header.Get("User-Id")
-	if userId == "" {
+	userId, err := GetUserId(c)
+	if err != nil {
 		c.JSON(400, gin.H{"error": "User-Id header is required"})
 		return
 	}
@@ -57,8 +59,8 @@ type MarkNotificationAsReadRequestBody struct {
 }
 
 func (s *NotificationService) PatchNotificationRead(c *gin.Context) {
-	userId := c.Request.Header.Get("User-Id")
-	if userId == "" {
+	userId, err := GetUserId(c)
+	if err != nil {
 		c.JSON(400, gin.H{"error": "User-Id header is required"})
 		return
 	}
@@ -149,4 +151,13 @@ func (s *NotificationService) ListenForRabbitmq() {
 	}()
 
 	<-forever
+}
+
+func GetUserId(c *gin.Context) (uint, error) {
+	userIdString := c.Request.Header.Get("User-Id")
+	userId, err := strconv.ParseUint(userIdString, 10, 64)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return uint(userId), nil
 }

@@ -7,7 +7,7 @@ type Notification struct {
 	Title    string             `bson:"title"`
 	Message  string             `bson:"message"`
 	Link     string             `bson:"link"`
-	UserID   string             `bson:"userId"`
+	UserID   uint               `bson:"userId"`
 	Read     bool               `bson:"read"`
 	UnixTime int64              `bson:"unixTime"`
 }
