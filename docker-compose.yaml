@@ -19,6 +19,7 @@ services:
       - SERVICE=user
       - SERVER_PORT=4000
       - CLIENT_PARCELSERVICEURL=user:4000
+      - CONSUL_HTTP_ADDR=consul:8500
       - DB_HOST=db
       - DB_PORT=5432
     ports:
@@ -33,6 +34,7 @@ services:
       - SERVICE=parcel
       - SERVER_PORT=4000
       - CLIENT_USERSERVICEURL=user:4000
+      - CONSUL_HTTP_ADDR=consul:8500
       - DB_HOST=db
       - DB_PORT=5432
     ports:
@@ -77,5 +79,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-
-    
+  consul:
+    image: consul
+    ports:
+      - "8500:8500"
