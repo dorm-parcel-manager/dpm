@@ -36,6 +36,11 @@ func ProvideConfig() *Config {
 	viper.SetDefault("db.password", "dpm")
 	viper.SetDefault("db.dbname", "dpm")
 
+	viper.SetDefault("rabbitmq.host", "localhost")
+	viper.SetDefault("rabbitmq.port", "5672")
+	viper.SetDefault("rabbitmq.user", "dpm")
+	viper.SetDefault("rabbitmq.password", "dpm")
+
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	viper.SetConfigName("config")
