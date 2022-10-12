@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ParcelServiceClient interface {
 	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 	GetParcels(ctx context.Context, in *GetParcelsRequest, opts ...grpc.CallOption) (*GetParcelsResponse, error)
+	StudentGetParcels(ctx context.Context, in *StudentGetParcelsRequest, opts ...grpc.CallOption) (*StudentGetParcelsResponse, error)
 	GetParcel(ctx context.Context, in *GetParcelRequest, opts ...grpc.CallOption) (*GetParcelResponse, error)
 	CreateParcel(ctx context.Context, in *CreateParcelRequest, opts ...grpc.CallOption) (*Empty, error)
 	UpdateParcel(ctx context.Context, in *UpdateParcelRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -53,6 +54,15 @@ func (c *parcelServiceClient) Hello(ctx context.Context, in *HelloRequest, opts 
 func (c *parcelServiceClient) GetParcels(ctx context.Context, in *GetParcelsRequest, opts ...grpc.CallOption) (*GetParcelsResponse, error) {
 	out := new(GetParcelsResponse)
 	err := c.cc.Invoke(ctx, "/pb.ParcelService/GetParcels", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *parcelServiceClient) StudentGetParcels(ctx context.Context, in *StudentGetParcelsRequest, opts ...grpc.CallOption) (*StudentGetParcelsResponse, error) {
+	out := new(StudentGetParcelsResponse)
+	err := c.cc.Invoke(ctx, "/pb.ParcelService/StudentGetParcels", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +138,7 @@ func (c *parcelServiceClient) StaffomfirmClaimParcel(ctx context.Context, in *St
 type ParcelServiceServer interface {
 	Hello(context.Context, *HelloRequest) (*HelloResponse, error)
 	GetParcels(context.Context, *GetParcelsRequest) (*GetParcelsResponse, error)
+	StudentGetParcels(context.Context, *StudentGetParcelsRequest) (*StudentGetParcelsResponse, error)
 	GetParcel(context.Context, *GetParcelRequest) (*GetParcelResponse, error)
 	CreateParcel(context.Context, *CreateParcelRequest) (*Empty, error)
 	UpdateParcel(context.Context, *UpdateParcelRequest) (*Empty, error)
@@ -147,6 +158,9 @@ func (UnimplementedParcelServiceServer) Hello(context.Context, *HelloRequest) (*
 }
 func (UnimplementedParcelServiceServer) GetParcels(context.Context, *GetParcelsRequest) (*GetParcelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetParcels not implemented")
+}
+func (UnimplementedParcelServiceServer) StudentGetParcels(context.Context, *StudentGetParcelsRequest) (*StudentGetParcelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StudentGetParcels not implemented")
 }
 func (UnimplementedParcelServiceServer) GetParcel(context.Context, *GetParcelRequest) (*GetParcelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetParcel not implemented")
@@ -214,6 +228,24 @@ func _ParcelService_GetParcels_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ParcelServiceServer).GetParcels(ctx, req.(*GetParcelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ParcelService_StudentGetParcels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StudentGetParcelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ParcelServiceServer).StudentGetParcels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ParcelService/StudentGetParcels",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ParcelServiceServer).StudentGetParcels(ctx, req.(*StudentGetParcelsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -358,6 +390,10 @@ var ParcelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetParcels",
 			Handler:    _ParcelService_GetParcels_Handler,
+		},
+		{
+			MethodName: "StudentGetParcels",
+			Handler:    _ParcelService_StudentGetParcels_Handler,
 		},
 		{
 			MethodName: "GetParcel",

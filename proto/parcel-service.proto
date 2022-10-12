@@ -10,6 +10,7 @@ import "google/protobuf/timestamp.proto";
 service ParcelService {
   rpc Hello (HelloRequest) returns (HelloResponse) {}
   rpc GetParcels (GetParcelsRequest) returns (GetParcelsResponse) {}
+  rpc StudentGetParcels (StudentGetParcelsRequest) returns (StudentGetParcelsResponse) {}
   rpc GetParcel (GetParcelRequest) returns (GetParcelResponse) {}
   rpc CreateParcel (CreateParcelRequest) returns (Empty) {}
   rpc UpdateParcel (UpdateParcelRequest) returns (Empty) {}
