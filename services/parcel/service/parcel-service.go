@@ -66,6 +66,27 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 	return &pb.GetParcelsResponse{Parcels: apiParcels}, nil
 }
 
+func (s *parcelServiceServer) StudentGetParcels(ctx context.Context, in *pb.StudentGetParcelsRequest) (*pb.StudentGetParcelsResponse, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireStudent()
+	if err != nil {
+		return nil, err
+	}
+
+	var parcels []model.Parcel
+	id := in.Id
+	result := s.db.WithContext(ctx).Where(&model.Parcel{Owner_ID: uint(id)}).Find(&parcels)
+	if result.Error != nil {
+		return nil, errors.WithStack(result.Error)
+	}
+
+	var apiParcels []*pb.Parcel
+	for _, parcel := range parcels {
+		apiParcels = append(apiParcels, mapModelToApi(&parcel))
+	}
+	return &pb.StudentGetParcelsResponse{Parcels: apiParcels}, nil
+}
+
 func (s *parcelServiceServer) GetParcel(ctx context.Context, in *pb.GetParcelRequest) (*pb.GetParcelResponse, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireStaff()
