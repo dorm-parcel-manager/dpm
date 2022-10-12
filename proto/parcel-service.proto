@@ -36,6 +36,15 @@ enum ParcelStatus {
   PARCEL_STAFF_CONFIRM_CLAIMED = 3;
 }
 
+message StudentGetParcelsRequest {
+  Context context = 1;
+  uint32 id = 2;
+}
+
+message StudentGetParcelsResponse{
+  repeated Parcel parcels = 1;
+}
+
 message GetParcelsRequest {
   Context context = 1;
 }
