@@ -3,13 +3,17 @@ package service
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/dorm-parcel-manager/dpm/common/appcontext"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
+	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/model"
+
 	"github.com/pkg/errors"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,19 +22,20 @@ import (
 
 type parcelServiceServer struct {
 	pb.UnimplementedParcelServiceServer
-
-	userService pb.UserServiceClient
-	db          *gorm.DB
+	rabbitmqChannel *amqp.Channel
+	userService     pb.UserServiceClient
+	db              *gorm.DB
 }
 
-func NewParcelServiceServer(db *gorm.DB, userService pb.UserServiceClient) (pb.ParcelServiceServer, error) {
+func NewParcelServiceServer(db *gorm.DB, userService pb.UserServiceClient, rabbitmqChannel *amqp.Channel) (pb.ParcelServiceServer, error) {
 	err := db.AutoMigrate(&model.Parcel{})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	return &parcelServiceServer{
-		db:          db,
-		userService: userService,
+		db:              db,
+		userService:     userService,
+		rabbitmqChannel: rabbitmqChannel,
 	}, nil
 }
 
@@ -74,7 +79,7 @@ func (s *parcelServiceServer) StudentGetParcels(ctx context.Context, in *pb.Stud
 	}
 
 	var parcels []model.Parcel
-	id := in.Id
+	id := in.Context.UserId
 	result := s.db.WithContext(ctx).Where(&model.Parcel{Owner_ID: uint(id)}).Find(&parcels)
 	if result.Error != nil {
 		return nil, errors.WithStack(result.Error)
@@ -180,19 +185,33 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 		return nil, err
 	}
 
-	parcel := &model.Parcel{
+	parcel, err := s.localGetParcel(ctx, uint(in.Id))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	updated_parcel := &model.Parcel{
 		ID:           uint(in.Id),
 		Status:       pb.ParcelStatus_PARCEL_ACCEPTED,
 		Arrival_Date: time.Now(),
 	}
 
-	result := s.db.WithContext(ctx).Model(&parcel).Select(
-		"Status",
-	).Updates(parcel)
+	result := s.db.WithContext(ctx).Model(&updated_parcel).Select(
+		"Status", "Arrival_Date",
+	).Updates(updated_parcel)
 
 	if result.Error != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	body := rabbitmq.NotificationBody{
+		Title:   "Delivery arrival notification",
+		Message: fmt.Sprintf("Your parcel %s have been accepted to our system.", parcel.Tracking_Number),
+		Link:    "ABCDEF",
+		UserID:  strconv.Itoa(int(parcel.Owner_ID)),
+	}
+
+	rabbitmq.PublishNotification(ctx, s.rabbitmqChannel, &body)
 	return &pb.Empty{}, nil
 }
 
@@ -201,6 +220,11 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 	err := appCtx.RequireStudent()
 	if err != nil {
 		return nil, err
+	}
+
+	_, err = s.localGetParcel(ctx, uint(in.Id))
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
 
 	parcel := &model.Parcel{
@@ -223,6 +247,11 @@ func (s *parcelServiceServer) StaffConfirmClaimParcel(ctx context.Context, in *p
 	err := appCtx.RequireStaff()
 	if err != nil {
 		return nil, err
+	}
+
+	_, err = s.localGetParcel(ctx, uint(in.Id))
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
 
 	parcel := &model.Parcel{
@@ -250,4 +279,15 @@ func mapModelToApi(parcel *model.Parcel) *pb.Parcel {
 		Sender:           parcel.Sender,
 		Status:           parcel.Status,
 	}
+}
+
+func (s *parcelServiceServer) localGetParcel(ctx context.Context, id uint) (*model.Parcel, error) {
+	var parcel model.Parcel
+	result := s.db.WithContext(ctx).Where(&model.Parcel{ID: id}).First(&parcel)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, status.Errorf(codes.NotFound, "parcel id %v not found", id)
+		}
+	}
+	return &parcel, nil
 }
