@@ -5,15 +5,17 @@ import (
 
 	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/dorm-parcel-manager/dpm/common/db"
+	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
 	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Server *server.Config
-	Client *client.Config
-	DB     *db.Config
+	Server   *server.Config
+	Client   *client.Config
+	DB       *db.Config
+	Rabbitmq *rabbitmq.Config
 }
 
 var ConfigSet = wire.NewSet(
