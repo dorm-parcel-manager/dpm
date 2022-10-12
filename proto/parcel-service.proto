@@ -39,7 +39,6 @@ enum ParcelStatus {
 
 message StudentGetParcelsRequest {
   Context context = 1;
-  uint32 id = 2;
 }
 
 message StudentGetParcelsResponse{
