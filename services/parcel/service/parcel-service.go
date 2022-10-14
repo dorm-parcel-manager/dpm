@@ -58,8 +58,18 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 		return nil, err
 	}
 
+	data := in.Data
+	query_statement := &model.Parcel{
+		Owner_ID:          uint(*data.OwnerId),
+		Arrival_Date:      data.ArrivalDate.AsTime(),
+		Transport_Company: *data.TransportCompany,
+		Tracking_Number:   *data.TrackingNumber,
+		Sender:            *data.Sender,
+		Status:            *data.Status,
+	}
+
 	var parcels []model.Parcel
-	result := s.db.WithContext(ctx).Find(&parcels)
+	result := s.db.WithContext(ctx).Where(query_statement).Find(&parcels)
 	if result.Error != nil {
 		return nil, errors.WithStack(result.Error)
 	}
@@ -127,7 +137,7 @@ func (s *parcelServiceServer) CreateParcel(ctx context.Context, in *pb.CreatePar
 		Transport_Company: data.TransportCompany,
 		Tracking_Number:   data.TrackingNumber,
 		Sender:            data.Sender,
-		Status:            pb.ParcelStatus_PARCEL_INAWAIT,
+		Status:            pb.ParcelStatus_PARCEL_REGISTERED,
 	}
 
 	result := s.db.WithContext(ctx).Create(&parcel)
@@ -154,6 +164,7 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 		Tracking_Number:   data.TrackingNumber,
 		Sender:            data.Sender,
 		Status:            data.Status,
+		Description:       data.Description,
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Updates(parcel)
@@ -192,12 +203,13 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 
 	updated_parcel := &model.Parcel{
 		ID:           uint(in.Id),
-		Status:       pb.ParcelStatus_PARCEL_ACCEPTED,
+		Status:       pb.ParcelStatus_PARCEL_ARRIVED,
 		Arrival_Date: time.Now(),
+		Description:  in.Data.Description,
 	}
 
 	result := s.db.WithContext(ctx).Model(&updated_parcel).Select(
-		"Status", "Arrival_Date",
+		"Status", "Arrival_Date", "Description",
 	).Updates(updated_parcel)
 
 	if result.Error != nil {
@@ -229,34 +241,7 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 
 	parcel := &model.Parcel{
 		ID:     uint(in.Id),
-		Status: pb.ParcelStatus_PARCEL_STUDENT_CLAIMED,
-	}
-
-	result := s.db.WithContext(ctx).Model(&parcel).Select(
-		"Status",
-	).Updates(parcel)
-
-	if result.Error != nil {
-		return nil, errors.WithStack(err)
-	}
-	return &pb.Empty{}, nil
-}
-
-func (s *parcelServiceServer) StaffConfirmClaimParcel(ctx context.Context, in *pb.StaffConfirmClaimParcelRequest) (*pb.Empty, error) {
-	appCtx := appcontext.NewAppContext(in.Context)
-	err := appCtx.RequireStaff()
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = s.localGetParcel(ctx, uint(in.Id))
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	parcel := &model.Parcel{
-		ID:     uint(in.Id),
-		Status: pb.ParcelStatus_PARCEL_STAFF_CONFIRM_CLAIMED,
+		Status: pb.ParcelStatus_PARCEL_PICKED_UP,
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Select(
