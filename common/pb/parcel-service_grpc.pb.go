@@ -31,7 +31,6 @@ type ParcelServiceClient interface {
 	DeleteParcel(ctx context.Context, in *DeleteParcelRequest, opts ...grpc.CallOption) (*Empty, error)
 	StaffAcceptDelivery(ctx context.Context, in *StaffAcceptDeliveryRequest, opts ...grpc.CallOption) (*Empty, error)
 	StudentClaimParcel(ctx context.Context, in *StudentClaimParcelRequest, opts ...grpc.CallOption) (*Empty, error)
-	StaffomfirmClaimParcel(ctx context.Context, in *StaffConfirmClaimParcelRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type parcelServiceClient struct {
@@ -123,15 +122,6 @@ func (c *parcelServiceClient) StudentClaimParcel(ctx context.Context, in *Studen
 	return out, nil
 }
 
-func (c *parcelServiceClient) StaffomfirmClaimParcel(ctx context.Context, in *StaffConfirmClaimParcelRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/pb.ParcelService/StaffomfirmClaimParcel", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ParcelServiceServer is the server API for ParcelService service.
 // All implementations must embed UnimplementedParcelServiceServer
 // for forward compatibility
@@ -145,7 +135,6 @@ type ParcelServiceServer interface {
 	DeleteParcel(context.Context, *DeleteParcelRequest) (*Empty, error)
 	StaffAcceptDelivery(context.Context, *StaffAcceptDeliveryRequest) (*Empty, error)
 	StudentClaimParcel(context.Context, *StudentClaimParcelRequest) (*Empty, error)
-	StaffomfirmClaimParcel(context.Context, *StaffConfirmClaimParcelRequest) (*Empty, error)
 	mustEmbedUnimplementedParcelServiceServer()
 }
 
@@ -179,9 +168,6 @@ func (UnimplementedParcelServiceServer) StaffAcceptDelivery(context.Context, *St
 }
 func (UnimplementedParcelServiceServer) StudentClaimParcel(context.Context, *StudentClaimParcelRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StudentClaimParcel not implemented")
-}
-func (UnimplementedParcelServiceServer) StaffomfirmClaimParcel(context.Context, *StaffConfirmClaimParcelRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StaffomfirmClaimParcel not implemented")
 }
 func (UnimplementedParcelServiceServer) mustEmbedUnimplementedParcelServiceServer() {}
 
@@ -358,24 +344,6 @@ func _ParcelService_StudentClaimParcel_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ParcelService_StaffomfirmClaimParcel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StaffConfirmClaimParcelRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ParcelServiceServer).StaffomfirmClaimParcel(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.ParcelService/StaffomfirmClaimParcel",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ParcelServiceServer).StaffomfirmClaimParcel(ctx, req.(*StaffConfirmClaimParcelRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // ParcelService_ServiceDesc is the grpc.ServiceDesc for ParcelService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -418,10 +386,6 @@ var ParcelService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StudentClaimParcel",
 			Handler:    _ParcelService_StudentClaimParcel_Handler,
-		},
-		{
-			MethodName: "StaffomfirmClaimParcel",
-			Handler:    _ParcelService_StaffomfirmClaimParcel_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

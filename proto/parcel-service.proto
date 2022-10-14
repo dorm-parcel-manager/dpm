@@ -17,7 +17,6 @@ service ParcelService {
   rpc DeleteParcel (DeleteParcelRequest) returns (Empty) {}
   rpc StaffAcceptDelivery (StaffAcceptDeliveryRequest) returns (Empty) {}
   rpc StudentClaimParcel (StudentClaimParcelRequest) returns (Empty) {}
-  rpc StaffomfirmClaimParcel (StaffConfirmClaimParcelRequest) returns (Empty) {}
 }
 
 message Parcel {
@@ -27,14 +26,33 @@ message Parcel {
   string transport_company = 4;
   string tracking_number = 5;
   string sender = 6;
-  ParcelStatus status = 7;
+  string description = 7;
+  ParcelStatus status = 8;
 }
 
 enum ParcelStatus {
-  PARCEL_INAWAIT = 0;
-  PARCEL_ACCEPTED = 1;
-  PARCEL_STUDENT_CLAIMED = 2;
-  PARCEL_STAFF_CONFIRM_CLAIMED = 3;
+  PARCEL_REGISTERED = 0;
+  PARCEL_ARRIVED = 1;
+  PARCEL_PICKED_UP = 2;
+}
+
+message GetParcelsRequest {
+  Context context = 1;
+  GetParcelsData data = 2;
+}
+
+message GetParcelsData {
+  optional int32 owner_id = 1;
+  optional google.protobuf.Timestamp arrival_date = 2;
+  optional string transport_company = 3;
+  optional string tracking_number = 4;
+  optional string sender = 5;
+  optional string description = 6;
+  optional ParcelStatus status = 7;
+}
+
+message GetParcelsResponse{
+  repeated Parcel parcels = 1;
 }
 
 message StudentGetParcelsRequest {
@@ -42,14 +60,6 @@ message StudentGetParcelsRequest {
 }
 
 message StudentGetParcelsResponse{
-  repeated Parcel parcels = 1;
-}
-
-message GetParcelsRequest {
-  Context context = 1;
-}
-
-message GetParcelsResponse{
   repeated Parcel parcels = 1;
 }
 
@@ -87,6 +97,7 @@ message UpdateParcelData {
   string tracking_number = 4;
   string sender = 5;
   ParcelStatus status = 6;
+  string description = 7;
 }
 
 message DeleteParcelRequest {
@@ -97,14 +108,14 @@ message DeleteParcelRequest {
 message StaffAcceptDeliveryRequest {
   Context context = 1;
   uint32 id = 2;
+  StaffAcceptDeliveryData data = 3;
+}
+
+message StaffAcceptDeliveryData {
+  string description = 1;
 }
 
 message StudentClaimParcelRequest {
-  Context context = 1;
-  uint32 id = 2;
-}
-
-message StaffConfirmClaimParcelRequest {
   Context context = 1;
   uint32 id = 2;
 }
