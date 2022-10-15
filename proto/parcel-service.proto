@@ -23,11 +23,12 @@ message Parcel {
   int32 id = 1;
   int32 owner_id = 2;
   google.protobuf.Timestamp arrival_date = 3;
-  string transport_company = 4;
-  string tracking_number = 5;
-  string sender = 6;
-  string description = 7;
-  ParcelStatus status = 8;
+  string name = 4;
+  string transport_company = 5;
+  string tracking_number = 6;
+  string sender = 7;
+  string description = 8;
+  ParcelStatus status = 9;
 }
 
 enum ParcelStatus {
@@ -44,14 +45,15 @@ message GetParcelsRequest {
 message GetParcelsData {
   optional int32 owner_id = 1;
   optional google.protobuf.Timestamp arrival_date = 2;
-  optional string transport_company = 3;
-  optional string tracking_number = 4;
-  optional string sender = 5;
-  optional string description = 6;
-  optional ParcelStatus status = 7;
+  optional string name = 3;
+  optional string transport_company = 4;
+  optional string tracking_number = 5;
+  optional string sender = 6;
+  optional string description = 7;
+  optional ParcelStatus status = 8;
 }
 
-message GetParcelsResponse{
+message GetParcelsResponse {
   repeated Parcel parcels = 1;
 }
 
@@ -59,16 +61,16 @@ message StudentGetParcelsRequest {
   Context context = 1;
 }
 
-message StudentGetParcelsResponse{
+message StudentGetParcelsResponse {
   repeated Parcel parcels = 1;
 }
 
-message GetParcelRequest{
+message GetParcelRequest {
   Context context = 1;
   uint32 id = 2;
 }
 
-message GetParcelResponse{
+message GetParcelResponse {
   Parcel parcel = 1;
 }
 
@@ -79,6 +81,7 @@ message CreateParcelRequest {
 
 message CreateParcelData {
   int32 owner_id = 1;
+  string name = 2;
   string transport_company = 3;
   string tracking_number = 4;
   string sender = 5;
@@ -93,11 +96,12 @@ message UpdateParcelRequest {
 message UpdateParcelData {
   int32 owner_id = 1;
   google.protobuf.Timestamp arrival_date = 2;
-  string transport_company = 3;
-  string tracking_number = 4;
-  string sender = 5;
-  ParcelStatus status = 6;
-  string description = 7;
+  string name = 3;
+  string transport_company = 4;
+  string tracking_number = 5;
+  string sender = 6;
+  ParcelStatus status = 7;
+  string description = 8;
 }
 
 message DeleteParcelRequest {

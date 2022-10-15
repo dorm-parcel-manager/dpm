@@ -62,6 +62,7 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 	queryStatement := &model.Parcel{
 		OwnerID:          uint(*data.OwnerId),
 		ArrivalDate:      data.ArrivalDate.AsTime(),
+		Name:             *data.Name,
 		TransportCompany: *data.TransportCompany,
 		TrackingNumber:   *data.TrackingNumber,
 		Sender:           *data.Sender,
@@ -259,6 +260,7 @@ func mapModelToApi(parcel *model.Parcel) *pb.Parcel {
 		Id:               int32(parcel.ID),
 		OwnerId:          int32(parcel.OwnerID),
 		ArrivalDate:      timestamppb.New(parcel.ArrivalDate),
+		Name:             parcel.Name,
 		TransportCompany: parcel.TransportCompany,
 		TrackingNumber:   parcel.TrackingNumber,
 		Sender:           parcel.Sender,

@@ -10,6 +10,7 @@ type Parcel struct {
 	ID               uint `gorm:"primaryKey"`
 	OwnerID          uint
 	ArrivalDate      time.Time
+	Name             string
 	TransportCompany string
 	TrackingNumber   string
 	Sender           string
