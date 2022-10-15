@@ -33,7 +33,7 @@ type NotificationBody struct {
 	Title   string `bson:"title"`
 	Message string `bson:"message"`
 	Link    string `bson:"link"`
-	UserID  string `bson:"userId"`
+	UserID  uint   `bson:"userId"`
 }
 
 const NOTIFICATION_QUEUE_NAME = "notification"

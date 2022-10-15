@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/dorm-parcel-manager/dpm/common/appcontext"
@@ -226,7 +225,7 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 		Title:   "Delivery arrival notification",
 		Message: fmt.Sprintf("Your parcel %s have been accepted to our system.", parcel.TrackingNumber),
 		Link:    "ABCDEF",
-		UserID:  strconv.Itoa(int(parcel.OwnerID)),
+		UserID:  parcel.OwnerID,
 	}
 
 	rabbitmq.PublishNotification(ctx, s.rabbitmqChannel, &body)
