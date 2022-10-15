@@ -59,17 +59,17 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 	}
 
 	data := in.Data
-	query_statement := &model.Parcel{
-		Owner_ID:          uint(*data.OwnerId),
-		Arrival_Date:      data.ArrivalDate.AsTime(),
-		Transport_Company: *data.TransportCompany,
-		Tracking_Number:   *data.TrackingNumber,
-		Sender:            *data.Sender,
-		Status:            *data.Status,
+	queryStatement := &model.Parcel{
+		OwnerID:          uint(*data.OwnerId),
+		ArrivalDate:      data.ArrivalDate.AsTime(),
+		TransportCompany: *data.TransportCompany,
+		TrackingNumber:   *data.TrackingNumber,
+		Sender:           *data.Sender,
+		Status:           *data.Status,
 	}
 
 	var parcels []model.Parcel
-	result := s.db.WithContext(ctx).Where(query_statement).Find(&parcels)
+	result := s.db.WithContext(ctx).Where(queryStatement).Find(&parcels)
 	if result.Error != nil {
 		return nil, errors.WithStack(result.Error)
 	}
@@ -90,7 +90,7 @@ func (s *parcelServiceServer) StudentGetParcels(ctx context.Context, in *pb.Stud
 
 	var parcels []model.Parcel
 	id := in.Context.UserId
-	result := s.db.WithContext(ctx).Where(&model.Parcel{Owner_ID: uint(id)}).Find(&parcels)
+	result := s.db.WithContext(ctx).Where(&model.Parcel{OwnerID: uint(id)}).Find(&parcels)
 	if result.Error != nil {
 		return nil, errors.WithStack(result.Error)
 	}
@@ -132,12 +132,12 @@ func (s *parcelServiceServer) CreateParcel(ctx context.Context, in *pb.CreatePar
 	data := in.Data
 
 	var parcel = &model.Parcel{
-		Owner_ID:          uint(data.OwnerId),
-		Arrival_Date:      time.UnixMicro(0),
-		Transport_Company: data.TransportCompany,
-		Tracking_Number:   data.TrackingNumber,
-		Sender:            data.Sender,
-		Status:            pb.ParcelStatus_PARCEL_REGISTERED,
+		OwnerID:          uint(data.OwnerId),
+		ArrivalDate:      time.UnixMicro(0),
+		TransportCompany: data.TransportCompany,
+		TrackingNumber:   data.TrackingNumber,
+		Sender:           data.Sender,
+		Status:           pb.ParcelStatus_PARCEL_REGISTERED,
 	}
 
 	result := s.db.WithContext(ctx).Create(&parcel)
@@ -157,14 +157,14 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 
 	data := in.Data
 	parcel := &model.Parcel{
-		ID:                uint(in.Id),
-		Owner_ID:          uint(data.OwnerId),
-		Arrival_Date:      data.ArrivalDate.AsTime(),
-		Transport_Company: data.TransportCompany,
-		Tracking_Number:   data.TrackingNumber,
-		Sender:            data.Sender,
-		Status:            data.Status,
-		Description:       data.Description,
+		ID:               uint(in.Id),
+		OwnerID:          uint(data.OwnerId),
+		ArrivalDate:      data.ArrivalDate.AsTime(),
+		TransportCompany: data.TransportCompany,
+		TrackingNumber:   data.TrackingNumber,
+		Sender:           data.Sender,
+		Status:           data.Status,
+		Description:      data.Description,
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Updates(parcel)
@@ -201,16 +201,16 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 		return nil, errors.WithStack(err)
 	}
 
-	updated_parcel := &model.Parcel{
-		ID:           uint(in.Id),
-		Status:       pb.ParcelStatus_PARCEL_ARRIVED,
-		Arrival_Date: time.Now(),
-		Description:  in.Data.Description,
+	updatedParcel := &model.Parcel{
+		ID:          uint(in.Id),
+		Status:      pb.ParcelStatus_PARCEL_ARRIVED,
+		ArrivalDate: time.Now(),
+		Description: in.Data.Description,
 	}
 
-	result := s.db.WithContext(ctx).Model(&updated_parcel).Select(
+	result := s.db.WithContext(ctx).Model(&updatedParcel).Select(
 		"Status", "Arrival_Date", "Description",
-	).Updates(updated_parcel)
+	).Updates(updatedParcel)
 
 	if result.Error != nil {
 		return nil, errors.WithStack(err)
@@ -218,9 +218,9 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 
 	body := rabbitmq.NotificationBody{
 		Title:   "Delivery arrival notification",
-		Message: fmt.Sprintf("Your parcel %s have been accepted to our system.", parcel.Tracking_Number),
+		Message: fmt.Sprintf("Your parcel %s have been accepted to our system.", parcel.TrackingNumber),
 		Link:    "ABCDEF",
-		UserID:  strconv.Itoa(int(parcel.Owner_ID)),
+		UserID:  strconv.Itoa(int(parcel.OwnerID)),
 	}
 
 	rabbitmq.PublishNotification(ctx, s.rabbitmqChannel, &body)
@@ -257,10 +257,10 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 func mapModelToApi(parcel *model.Parcel) *pb.Parcel {
 	return &pb.Parcel{
 		Id:               int32(parcel.ID),
-		OwnerId:          int32(parcel.Owner_ID),
-		ArrivalDate:      timestamppb.New(parcel.Arrival_Date),
-		TransportCompany: parcel.Transport_Company,
-		TrackingNumber:   parcel.Tracking_Number,
+		OwnerId:          int32(parcel.OwnerID),
+		ArrivalDate:      timestamppb.New(parcel.ArrivalDate),
+		TransportCompany: parcel.TransportCompany,
+		TrackingNumber:   parcel.TrackingNumber,
 		Sender:           parcel.Sender,
 		Status:           parcel.Status,
 	}
