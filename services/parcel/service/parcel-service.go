@@ -106,13 +106,17 @@ func (s *parcelServiceServer) StudentGetParcels(ctx context.Context, in *pb.Stud
 
 func (s *parcelServiceServer) GetParcel(ctx context.Context, in *pb.GetParcelRequest) (*pb.GetParcelResponse, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
-	err := appCtx.RequireStaff()
+	err := appCtx.RequireLoggedIn()
 	if err != nil {
 		return nil, err
 	}
 
 	var parcel model.Parcel
-	result := s.db.WithContext(ctx).Where(&model.Parcel{ID: uint(in.Id)}).First(&parcel)
+	where := &model.Parcel{ID: uint(in.Id)}
+	if appCtx.GetUserType() == pb.UserType_TYPE_STUDENT {
+		where.OwnerID = appCtx.GetUserID()
+	}
+	result := s.db.WithContext(ctx).Where(where).First(&parcel)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "parcel id %v not found", in.Id)
@@ -198,7 +202,7 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 		return nil, err
 	}
 
-	parcel, err := s.localGetParcel(ctx, uint(in.Id))
+	parcel, err := s.localGetParcel(ctx, &model.Parcel{ID: uint(in.Id)})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -236,7 +240,7 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 		return nil, err
 	}
 
-	_, err = s.localGetParcel(ctx, uint(in.Id))
+	_, err = s.localGetParcel(ctx, &model.Parcel{ID: uint(in.Id), OwnerID: uint(in.Context.UserId)})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -272,12 +276,12 @@ func mapModelToApi(parcel *model.Parcel) *pb.Parcel {
 	}
 }
 
-func (s *parcelServiceServer) localGetParcel(ctx context.Context, id uint) (*model.Parcel, error) {
+func (s *parcelServiceServer) localGetParcel(ctx context.Context, where *model.Parcel) (*model.Parcel, error) {
 	var parcel model.Parcel
-	result := s.db.WithContext(ctx).Where(&model.Parcel{ID: id}).First(&parcel)
+	result := s.db.WithContext(ctx).Where(where).First(&parcel)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, status.Errorf(codes.NotFound, "parcel id %v not found", id)
+			return nil, status.Errorf(codes.NotFound, "parcel id %v not found", where.ID)
 		}
 	}
 	return &parcel, nil

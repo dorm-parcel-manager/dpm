@@ -2,6 +2,7 @@ package appcontext
 
 import (
 	"fmt"
+
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
@@ -21,6 +22,11 @@ func NewAppContext(context *pb.Context) AppContext {
 func (a *appContextImpl) RequireLoggedIn() error {
 	if a.context.UserId == 0 {
 		return status.Error(codes.Unauthenticated, "unauthenticated")
+	}
+	if a.GetUserType() != pb.UserType_TYPE_STUDENT &&
+		a.GetUserType() != pb.UserType_TYPE_STAFF &&
+		a.GetUserType() != pb.UserType_TYPE_ADMIN {
+		return status.Error(codes.Unauthenticated, "invalid user type")
 	}
 	return nil
 }
@@ -46,4 +52,12 @@ func (a *appContextImpl) RequireStaff() error {
 
 func (a *appContextImpl) RequireAdmin() error {
 	return a.requireUserType(pb.UserType_TYPE_ADMIN)
+}
+
+func (a *appContextImpl) GetUserID() uint {
+	return uint(a.context.UserId)
+}
+
+func (a *appContextImpl) GetUserType() pb.UserType {
+	return a.context.UserType
 }
