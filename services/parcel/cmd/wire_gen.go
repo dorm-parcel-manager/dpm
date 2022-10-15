@@ -8,9 +8,10 @@ package cmd
 
 import (
 	"github.com/dorm-parcel-manager/dpm/common/client"
-	"github.com/dorm-parcel-manager/dpm/common/pb"
-	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/dorm-parcel-manager/dpm/common/db"
+	"github.com/dorm-parcel-manager/dpm/common/pb"
+	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
+	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/config"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/service"
 	"google.golang.org/grpc"
@@ -23,6 +24,7 @@ func InitializeServer() (*server.Server, func(), error) {
 	configConfig := config.ProvideConfig()
 	serverConfig := configConfig.Server
 	clientConfig := configConfig.Client
+	rabbitmqConfig := configConfig.Rabbitmq
 
 	userServiceClient, cleanup, err := client.ProvideUserServiceClient(clientConfig)
 	if err != nil {
@@ -35,7 +37,12 @@ func InitializeServer() (*server.Server, func(), error) {
 		return nil, nil, err
 	}
 
-	parcelServiceServer, err := service.NewParcelServiceServer(gormDB, userServiceClient)
+	channel, err := rabbitmq.NewChannel(rabbitmqConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	parcelServiceServer, err := service.NewParcelServiceServer(gormDB, userServiceClient, channel)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
@@ -43,6 +50,7 @@ func InitializeServer() (*server.Server, func(), error) {
 
 	grpcServer := ProvideGrpcServer(parcelServiceServer)
 	serverServer := server.NewServer(serverConfig, grpcServer)
+
 
 	return serverServer, func() {
 		cleanup()

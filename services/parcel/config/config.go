@@ -5,15 +5,17 @@ import (
 
 	"github.com/dorm-parcel-manager/dpm/common/client"
 	"github.com/dorm-parcel-manager/dpm/common/db"
+	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
 	"github.com/dorm-parcel-manager/dpm/common/server"
 	"github.com/google/wire"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Server *server.Config
-	Client *client.Config
-	DB     *db.Config
+	Server   *server.Config
+	Client   *client.Config
+	DB       *db.Config
+	Rabbitmq *rabbitmq.Config
 }
 
 var ConfigSet = wire.NewSet(
@@ -33,6 +35,11 @@ func ProvideConfig() *Config {
 	viper.SetDefault("db.user", "dpm")
 	viper.SetDefault("db.password", "dpm")
 	viper.SetDefault("db.dbname", "dpm")
+
+	viper.SetDefault("rabbitmq.host", "localhost")
+	viper.SetDefault("rabbitmq.port", "5672")
+	viper.SetDefault("rabbitmq.user", "dpm")
+	viper.SetDefault("rabbitmq.password", "dpm")
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
