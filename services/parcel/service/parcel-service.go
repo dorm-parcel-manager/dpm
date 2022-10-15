@@ -134,7 +134,7 @@ func (s *parcelServiceServer) CreateParcel(ctx context.Context, in *pb.CreatePar
 
 	var parcel = &model.Parcel{
 		OwnerID:          uint(data.OwnerId),
-		ArrivalDate:      time.UnixMicro(0),
+		Name:             data.Name,
 		TransportCompany: data.TransportCompany,
 		TrackingNumber:   data.TrackingNumber,
 		Sender:           data.Sender,
