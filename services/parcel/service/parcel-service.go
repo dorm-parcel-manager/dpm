@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/dorm-parcel-manager/dpm/common/appcontext"
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
+	"github.com/dorm-parcel-manager/dpm/common/utils"
 	"github.com/dorm-parcel-manager/dpm/services/parcel/model"
 
 	"github.com/pkg/errors"
@@ -16,7 +18,6 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
 
@@ -61,7 +62,7 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 	data := in.Data
 	queryStatement := &model.Parcel{
 		OwnerID:          uint(*data.OwnerId),
-		ArrivalDate:      data.ArrivalDate.AsTime(),
+		ArrivalDate:      sql.NullTime{Time: data.ArrivalDate.AsTime(), Valid: true},
 		Name:             *data.Name,
 		TransportCompany: *data.TransportCompany,
 		TrackingNumber:   *data.TrackingNumber,
@@ -160,7 +161,7 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 	parcel := &model.Parcel{
 		ID:               uint(in.Id),
 		OwnerID:          uint(data.OwnerId),
-		ArrivalDate:      data.ArrivalDate.AsTime(),
+		ArrivalDate:      sql.NullTime{},
 		TransportCompany: data.TransportCompany,
 		TrackingNumber:   data.TrackingNumber,
 		Sender:           data.Sender,
@@ -205,12 +206,12 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 	updatedParcel := &model.Parcel{
 		ID:          uint(in.Id),
 		Status:      pb.ParcelStatus_PARCEL_ARRIVED,
-		ArrivalDate: time.Now(),
+		ArrivalDate: sql.NullTime{Time: time.Now(), Valid: true},
 		Description: in.Data.Description,
 	}
 
 	result := s.db.WithContext(ctx).Model(&updatedParcel).Select(
-		"Status", "Arrival_Date", "Description",
+		"Status", "ArrivalDate", "Description",
 	).Updates(updatedParcel)
 
 	if result.Error != nil {
@@ -241,12 +242,14 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 	}
 
 	parcel := &model.Parcel{
-		ID:     uint(in.Id),
-		Status: pb.ParcelStatus_PARCEL_PICKED_UP,
+		ID:           uint(in.Id),
+		Status:       pb.ParcelStatus_PARCEL_PICKED_UP,
+		PickedUpDate: sql.NullTime{Time: time.Now(), Valid: true},
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Select(
 		"Status",
+		"PickedUpDate",
 	).Updates(parcel)
 
 	if result.Error != nil {
@@ -259,7 +262,8 @@ func mapModelToApi(parcel *model.Parcel) *pb.Parcel {
 	return &pb.Parcel{
 		Id:               int32(parcel.ID),
 		OwnerId:          int32(parcel.OwnerID),
-		ArrivalDate:      timestamppb.New(parcel.ArrivalDate),
+		ArrivalDate:      utils.NullTimeToTimestampPb(parcel.ArrivalDate),
+		PickedUpDate:     utils.NullTimeToTimestampPb(parcel.PickedUpDate),
 		Name:             parcel.Name,
 		TransportCompany: parcel.TransportCompany,
 		TrackingNumber:   parcel.TrackingNumber,

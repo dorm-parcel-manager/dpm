@@ -22,13 +22,17 @@ service ParcelService {
 message Parcel {
   int32 id = 1;
   int32 owner_id = 2;
-  google.protobuf.Timestamp arrival_date = 3;
-  string name = 4;
-  string transport_company = 5;
-  string tracking_number = 6;
-  string sender = 7;
-  string description = 8;
-  ParcelStatus status = 9;
+  optional google.protobuf.Timestamp arrival_date = 3;
+  optional google.protobuf.Timestamp picked_up_date = 4;
+  string name = 5;
+  string transport_company = 6;
+  string tracking_number = 7;
+  string sender = 8;
+  string description = 9;
+  ParcelStatus status = 10;
+
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
 }
 
 enum ParcelStatus {
