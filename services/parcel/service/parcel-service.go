@@ -50,7 +50,6 @@ func (s *parcelServiceServer) Hello(ctx context.Context, in *pb.HelloRequest) (*
 	}, nil
 }
 
-// Consult context of two roles with pro
 func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsRequest) (*pb.GetParcelsResponse, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireStaff()
@@ -59,18 +58,27 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 	}
 
 	data := in.Data
-	queryStatement := &model.Parcel{
-		OwnerID:          uint(*data.OwnerId),
-		ArrivalDate:      sql.NullTime{Time: data.ArrivalDate.AsTime(), Valid: true},
-		Name:             *data.Name,
-		TransportCompany: *data.TransportCompany,
-		TrackingNumber:   *data.TrackingNumber,
-		Sender:           *data.Sender,
-		Status:           *data.Status,
-	}
+	queryStatement := ""
 
 	var parcels []model.Parcel
-	result := s.db.WithContext(ctx).Where(queryStatement).Find(&parcels)
+	result := s.db.WithContext(ctx).Where(queryStatement)
+
+	TransportCompany := data.TransportCompany
+	if TransportCompany != nil {
+		result = result.Where("transport_company LIKE ? ", *TransportCompany+"%")
+	}
+
+	TrackingNumber := data.TrackingNumber
+	if TrackingNumber != nil {
+		result = result.Where("tracking_number LIKE ? ", *TrackingNumber+"%")
+	}
+
+	Sender := data.Sender
+	if Sender != nil {
+		result = result.Where("sender LIKE ? ", *Sender+"%")
+	}
+	result = result.Find(&parcels)
+
 	if result.Error != nil {
 		return nil, errors.WithStack(result.Error)
 	}
@@ -162,19 +170,48 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 
 	data := in.Data
 	parcel := &model.Parcel{
-		ID:               uint(in.Id),
-		OwnerID:          uint(data.OwnerId),
-		ArrivalDate:      sql.NullTime{},
-		TransportCompany: data.TransportCompany,
-		TrackingNumber:   data.TrackingNumber,
-		Sender:           data.Sender,
-		Status:           data.Status,
-		Description:      data.Description,
+		ID: uint(in.Id),
+	}
+
+	OwnerID := data.OwnerId
+	if OwnerID != nil {
+		parcel.OwnerID = uint(*OwnerID)
+	}
+
+	ArrivalDate := data.ArrivalDate
+	if ArrivalDate != nil {
+		parcel.ArrivalDate = sql.NullTime{Time: data.ArrivalDate.AsTime(), Valid: true}
+	}
+
+	TransportCompany := data.TransportCompany
+	if TransportCompany != nil {
+		parcel.TransportCompany = *data.TransportCompany
+	}
+
+	TrackingNumber := data.TrackingNumber
+	if TrackingNumber != nil {
+		parcel.TrackingNumber = *TrackingNumber
+	}
+
+	Sender := data.Sender
+	if Sender != nil {
+		parcel.Sender = *Sender
+	}
+
+	Status := data.Status
+	if Status != nil {
+		parcel.Status = *Status
+	}
+
+	Description := data.Description
+	if Description != nil {
+		parcel.Description = *Description
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Updates(parcel)
 
 	if result.Error != nil {
+		fmt.Println(result.Error)
 		return nil, errors.WithStack(err)
 	}
 	return &pb.Empty{}, nil
