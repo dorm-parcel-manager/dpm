@@ -47,14 +47,9 @@ message GetParcelsRequest {
 }
 
 message GetParcelsData {
-  optional int32 owner_id = 1;
-  optional google.protobuf.Timestamp arrival_date = 2;
-  optional string name = 3;
-  optional string transport_company = 4;
-  optional string tracking_number = 5;
-  optional string sender = 6;
-  optional string description = 7;
-  optional ParcelStatus status = 8;
+  optional string transport_company = 1;
+  optional string tracking_number = 2;
+  optional string sender = 3;
 }
 
 message GetParcelsResponse {
@@ -98,14 +93,15 @@ message UpdateParcelRequest {
 }
 
 message UpdateParcelData {
-  int32 owner_id = 1;
-  google.protobuf.Timestamp arrival_date = 2;
-  string name = 3;
-  string transport_company = 4;
-  string tracking_number = 5;
-  string sender = 6;
-  ParcelStatus status = 7;
-  string description = 8;
+  optional int32 owner_id = 1;
+  optional google.protobuf.Timestamp arrival_date = 2;
+  optional google.protobuf.Timestamp picked_up_date = 3;
+  optional string name = 4;
+  optional string transport_company = 5;
+  optional string tracking_number = 6;
+  optional string sender = 7;
+  optional ParcelStatus status = 8;
+  optional string description = 9;
 }
 
 message DeleteParcelRequest {
