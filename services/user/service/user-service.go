@@ -66,12 +66,22 @@ func (s *userServiceServer) GetUserInfo(ctx context.Context, in *pb.GetUserInfoR
 		}
 		return nil, result.Error
 	}
-	return &pb.UserInfo{
-		Id:        uint32(user.ID),
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Picture:   user.Picture,
-		Type:      user.Type,
+	return mapModelToUserInfo(&user), nil
+}
+
+func (s *userServiceServer) BatchGetUserInfo(ctx context.Context, in *pb.BatchGetUserInfoRequest) (*pb.BatchGetUserInfoResponse, error) {
+	var users []model.User
+	result := s.db.WithContext(ctx).Where("id IN ?", in.Ids).Find(&users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	var userInfos []*pb.UserInfo
+	for _, user := range users {
+		userInfos = append(userInfos, mapModelToUserInfo(&user))
+	}
+	return &pb.BatchGetUserInfoResponse{
+		UserInfos: userInfos,
 	}, nil
 }
 
@@ -165,5 +175,15 @@ func mapModelToApi(user *model.User) *pb.User {
 		Type:      user.Type,
 		CreatedAt: timestamppb.New(user.CreatedAt),
 		UpdatedAt: timestamppb.New(user.UpdatedAt),
+	}
+}
+
+func mapModelToUserInfo(user *model.User) *pb.UserInfo {
+	return &pb.UserInfo{
+		Id:        uint32(user.ID),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Picture:   user.Picture,
+		Type:      user.Type,
 	}
 }

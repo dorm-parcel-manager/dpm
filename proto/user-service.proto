@@ -11,6 +11,7 @@ service UserService {
   rpc Hello (HelloRequest) returns (HelloResponse) {}
   rpc GetUserForAuth (GetUserForAuthRequest) returns (User) {}
   rpc GetUserInfo (GetUserInfoRequest) returns (UserInfo) {}
+  rpc BatchGetUserInfo (BatchGetUserInfoRequest) returns (BatchGetUserInfoResponse) {}
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse) {}
   rpc GetUser (GetUserRequest) returns (GetUserResponse) {}
   rpc UpdateUser (UpdateUserRequest) returns (Empty) {}
@@ -48,6 +49,14 @@ message UserInfo {
   string last_name = 3;
   string picture = 5;
   UserType type = 4;
+}
+
+message BatchGetUserInfoRequest {
+  repeated uint32 ids = 1;
+}
+
+message BatchGetUserInfoResponse {
+  repeated UserInfo userInfos = 1;
 }
 
 message GetUsersRequest {
