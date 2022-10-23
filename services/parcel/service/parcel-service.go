@@ -151,6 +151,7 @@ func (s *parcelServiceServer) CreateParcel(ctx context.Context, in *pb.CreatePar
 		TrackingNumber:   data.TrackingNumber,
 		Sender:           data.Sender,
 		Status:           pb.ParcelStatus_PARCEL_REGISTERED,
+		CreatedAt:        time.Now(),
 	}
 
 	result := s.db.WithContext(ctx).Create(&parcel)
@@ -170,7 +171,8 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 
 	data := in.Data
 	parcel := &model.Parcel{
-		ID: uint(in.Id),
+		ID:        uint(in.Id),
+		UpdatedAt: time.Now(),
 	}
 
 	OwnerID := data.OwnerId
@@ -248,10 +250,11 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 		Status:      pb.ParcelStatus_PARCEL_ARRIVED,
 		ArrivalDate: sql.NullTime{Time: time.Now(), Valid: true},
 		Description: in.Data.Description,
+		UpdatedAt:   time.Now(),
 	}
 
 	result := s.db.WithContext(ctx).Model(&updatedParcel).Select(
-		"Status", "ArrivalDate", "Description",
+		"Status", "ArrivalDate", "Description", "UpdatedAt",
 	).Updates(updatedParcel)
 
 	if result.Error != nil {
@@ -261,7 +264,7 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 	body := rabbitmq.NotificationBody{
 		Title:   "Delivery arrival notification",
 		Message: fmt.Sprintf("Your parcel %s have been accepted to our system.", parcel.TrackingNumber),
-		Link:    "ABCDEF",
+		Link:    fmt.Sprintf("/parcels/%d", in.Id),
 		UserID:  parcel.OwnerID,
 	}
 
@@ -285,11 +288,13 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 		ID:           uint(in.Id),
 		Status:       pb.ParcelStatus_PARCEL_PICKED_UP,
 		PickedUpDate: sql.NullTime{Time: time.Now(), Valid: true},
+		UpdatedAt:    time.Now(),
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Select(
 		"Status",
 		"PickedUpDate",
+		"UpdatedAt",
 	).Updates(parcel)
 
 	if result.Error != nil {
