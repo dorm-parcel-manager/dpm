@@ -77,6 +77,8 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 	if Sender != nil {
 		result = result.Where("sender LIKE ? ", *Sender+"%")
 	}
+
+	result = result.Where("status", pb.ParcelStatus_PARCEL_REGISTERED)
 	result = result.Find(&parcels)
 
 	if result.Error != nil {
@@ -264,7 +266,7 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 
 	body := rabbitmq.NotificationBody{
 		Title:   "Delivery arrival notification",
-		Message: fmt.Sprintf("Your parcel %s have been accepted to our system.", parcel.TrackingNumber),
+		Message: fmt.Sprintf("%s have  arrived.", parcel.Name),
 		Link:    fmt.Sprintf("/parcels/%d", in.Id),
 		UserID:  parcel.OwnerID,
 	}
