@@ -52,7 +52,7 @@ func (s *parcelServiceServer) Hello(ctx context.Context, in *pb.HelloRequest) (*
 
 func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsRequest) (*pb.GetParcelsResponse, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
-	err := appCtx.RequireStaff()
+	err := appCtx.RequireAdmin()
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,11 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 		result = result.Where("sender LIKE ? ", *Sender+"%")
 	}
 
-	result = result.Where("status", pb.ParcelStatus_PARCEL_REGISTERED)
+	Status := data.Status
+	if Status != nil {
+		result = result.Where("status", *Status)
+	}
+
 	result = result.Find(&parcels)
 
 	if result.Error != nil {

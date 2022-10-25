@@ -25,7 +25,7 @@ type ParcelServiceClient interface {
 	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 	GetParcels(ctx context.Context, in *GetParcelsRequest, opts ...grpc.CallOption) (*GetParcelsResponse, error)
 	StudentGetParcels(ctx context.Context, in *StudentGetParcelsRequest, opts ...grpc.CallOption) (*StudentGetParcelsResponse, error)
-	StaffGetParcels(ctx context.Context, in *StudentGetParcelsRequest, opts ...grpc.CallOption) (*StudentGetParcelsResponse, error)
+	StaffGetParcels(ctx context.Context, in *StaffGetParcelsRequest, opts ...grpc.CallOption) (*StaffGetParcelsResponse, error)
 	GetParcel(ctx context.Context, in *GetParcelRequest, opts ...grpc.CallOption) (*GetParcelResponse, error)
 	CreateParcel(ctx context.Context, in *CreateParcelRequest, opts ...grpc.CallOption) (*Empty, error)
 	UpdateParcel(ctx context.Context, in *UpdateParcelRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -69,8 +69,8 @@ func (c *parcelServiceClient) StudentGetParcels(ctx context.Context, in *Student
 	return out, nil
 }
 
-func (c *parcelServiceClient) StaffGetParcels(ctx context.Context, in *StudentGetParcelsRequest, opts ...grpc.CallOption) (*StudentGetParcelsResponse, error) {
-	out := new(StudentGetParcelsResponse)
+func (c *parcelServiceClient) StaffGetParcels(ctx context.Context, in *StaffGetParcelsRequest, opts ...grpc.CallOption) (*StaffGetParcelsResponse, error) {
+	out := new(StaffGetParcelsResponse)
 	err := c.cc.Invoke(ctx, "/pb.ParcelService/StaffGetParcels", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -139,7 +139,7 @@ type ParcelServiceServer interface {
 	Hello(context.Context, *HelloRequest) (*HelloResponse, error)
 	GetParcels(context.Context, *GetParcelsRequest) (*GetParcelsResponse, error)
 	StudentGetParcels(context.Context, *StudentGetParcelsRequest) (*StudentGetParcelsResponse, error)
-	StaffGetParcels(context.Context, *StudentGetParcelsRequest) (*StudentGetParcelsResponse, error)
+	StaffGetParcels(context.Context, *StaffGetParcelsRequest) (*StaffGetParcelsResponse, error)
 	GetParcel(context.Context, *GetParcelRequest) (*GetParcelResponse, error)
 	CreateParcel(context.Context, *CreateParcelRequest) (*Empty, error)
 	UpdateParcel(context.Context, *UpdateParcelRequest) (*Empty, error)
@@ -162,7 +162,7 @@ func (UnimplementedParcelServiceServer) GetParcels(context.Context, *GetParcelsR
 func (UnimplementedParcelServiceServer) StudentGetParcels(context.Context, *StudentGetParcelsRequest) (*StudentGetParcelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StudentGetParcels not implemented")
 }
-func (UnimplementedParcelServiceServer) StaffGetParcels(context.Context, *StudentGetParcelsRequest) (*StudentGetParcelsResponse, error) {
+func (UnimplementedParcelServiceServer) StaffGetParcels(context.Context, *StaffGetParcelsRequest) (*StaffGetParcelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StaffGetParcels not implemented")
 }
 func (UnimplementedParcelServiceServer) GetParcel(context.Context, *GetParcelRequest) (*GetParcelResponse, error) {
@@ -251,7 +251,7 @@ func _ParcelService_StudentGetParcels_Handler(srv interface{}, ctx context.Conte
 }
 
 func _ParcelService_StaffGetParcels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StudentGetParcelsRequest)
+	in := new(StaffGetParcelsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -263,7 +263,7 @@ func _ParcelService_StaffGetParcels_Handler(srv interface{}, ctx context.Context
 		FullMethod: "/pb.ParcelService/StaffGetParcels",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ParcelServiceServer).StaffGetParcels(ctx, req.(*StudentGetParcelsRequest))
+		return srv.(ParcelServiceServer).StaffGetParcels(ctx, req.(*StaffGetParcelsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
