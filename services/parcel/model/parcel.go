@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/dorm-parcel-manager/dpm/common/pb"
 )
@@ -18,7 +17,6 @@ type Parcel struct {
 	Sender           string
 	Description      string
 	Status           pb.ParcelStatus
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt        sql.NullTime
+	UpdatedAt        sql.NullTime
 }

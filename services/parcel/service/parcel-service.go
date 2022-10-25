@@ -151,7 +151,7 @@ func (s *parcelServiceServer) CreateParcel(ctx context.Context, in *pb.CreatePar
 		TrackingNumber:   data.TrackingNumber,
 		Sender:           data.Sender,
 		Status:           pb.ParcelStatus_PARCEL_REGISTERED,
-		CreatedAt:        time.Now(),
+		CreatedAt:        sql.NullTime{Time: time.Now(), Valid: true},
 	}
 
 	result := s.db.WithContext(ctx).Create(&parcel)
@@ -172,7 +172,7 @@ func (s *parcelServiceServer) UpdateParcel(ctx context.Context, in *pb.UpdatePar
 	data := in.Data
 	parcel := &model.Parcel{
 		ID:        uint(in.Id),
-		UpdatedAt: time.Now(),
+		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
 	}
 
 	OwnerID := data.OwnerId
@@ -250,8 +250,9 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 		Status:      pb.ParcelStatus_PARCEL_ARRIVED,
 		ArrivalDate: sql.NullTime{Time: time.Now(), Valid: true},
 		Description: in.Data.Description,
-		UpdatedAt:   time.Now(),
+		UpdatedAt:   sql.NullTime{Time: time.Now(), Valid: true},
 	}
+	fmt.Println(updatedParcel)
 
 	result := s.db.WithContext(ctx).Model(&updatedParcel).Select(
 		"Status", "ArrivalDate", "Description", "UpdatedAt",
@@ -288,7 +289,7 @@ func (s *parcelServiceServer) StudentClaimParcel(ctx context.Context, in *pb.Stu
 		ID:           uint(in.Id),
 		Status:       pb.ParcelStatus_PARCEL_PICKED_UP,
 		PickedUpDate: sql.NullTime{Time: time.Now(), Valid: true},
-		UpdatedAt:    time.Now(),
+		UpdatedAt:    sql.NullTime{Time: time.Now(), Valid: true},
 	}
 
 	result := s.db.WithContext(ctx).Model(&parcel).Select(
@@ -314,6 +315,9 @@ func mapModelToApi(parcel *model.Parcel) *pb.Parcel {
 		TrackingNumber:   parcel.TrackingNumber,
 		Sender:           parcel.Sender,
 		Status:           parcel.Status,
+		Description:      parcel.Description,
+		CreatedAt:        utils.NullTimeToTimestampPb(parcel.CreatedAt),
+		UpdatedAt:        utils.NullTimeToTimestampPb(parcel.UpdatedAt),
 	}
 }
 
