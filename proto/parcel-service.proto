@@ -11,6 +11,7 @@ service ParcelService {
   rpc Hello (HelloRequest) returns (HelloResponse) {}
   rpc GetParcels (GetParcelsRequest) returns (GetParcelsResponse) {}
   rpc StudentGetParcels (StudentGetParcelsRequest) returns (StudentGetParcelsResponse) {}
+  rpc StaffGetParcels (StudentGetParcelsRequest) returns (StudentGetParcelsResponse) {}
   rpc GetParcel (GetParcelRequest) returns (GetParcelResponse) {}
   rpc CreateParcel (CreateParcelRequest) returns (Empty) {}
   rpc UpdateParcel (UpdateParcelRequest) returns (Empty) {}
@@ -61,6 +62,21 @@ message StudentGetParcelsRequest {
 }
 
 message StudentGetParcelsResponse {
+  repeated Parcel parcels = 1;
+}
+
+message StaffGetParcelsRequest {
+  Context context = 1;
+  StaffGetParcelsData data = 2;
+}
+
+message StaffGetParcelsData {
+  optional string transport_company = 1;
+  optional string tracking_number = 2;
+  optional string sender = 3;
+}
+
+message StaffGetParcelsResponse {
   repeated Parcel parcels = 1;
 }
 
