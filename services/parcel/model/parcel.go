@@ -7,16 +7,16 @@ import (
 )
 
 type Parcel struct {
-	ID               uint `gorm:"primaryKey"`
-	OwnerID          uint
+	ID               uint 	`gorm:"primaryKey"`
+	OwnerID          uint	`gorm:"not null"`
 	ArrivalDate      sql.NullTime
 	PickedUpDate     sql.NullTime
-	Name             string
-	TransportCompany string
-	TrackingNumber   string
-	Sender           string
+	Name             string	`gorm:"not null"`
+	TransportCompany string	`gorm:"not null"`
+	TrackingNumber   string	`gorm:"unique;not null"`
+	Sender           string	`gorm:"not null"`
 	Description      string
 	Status           pb.ParcelStatus
-	CreatedAt        sql.NullTime
+	CreatedAt        sql.NullTime `gorm:"not null"`
 	UpdatedAt        sql.NullTime
 }

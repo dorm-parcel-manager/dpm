@@ -52,6 +52,52 @@ func (s *parcelServiceServer) Hello(ctx context.Context, in *pb.HelloRequest) (*
 
 func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsRequest) (*pb.GetParcelsResponse, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireAdmin()
+	if err != nil {
+		return nil, err
+	}
+
+	data := in.Data
+	queryStatement := ""
+
+	var parcels []model.Parcel
+	result := s.db.WithContext(ctx).Where(queryStatement)
+
+	TransportCompany := data.TransportCompany
+	if TransportCompany != nil {
+		result = result.Where("transport_company LIKE ? ", *TransportCompany+"%")
+	}
+
+	TrackingNumber := data.TrackingNumber
+	if TrackingNumber != nil {
+		result = result.Where("tracking_number LIKE ? ", *TrackingNumber+"%")
+	}
+
+	Sender := data.Sender
+	if Sender != nil {
+		result = result.Where("sender LIKE ? ", *Sender+"%")
+	}
+
+	Status := data.Status
+	if Status != nil {
+		result = result.Where("status", *Status)
+	}
+
+	result = result.Find(&parcels)
+
+	if result.Error != nil {
+		return nil, errors.WithStack(result.Error)
+	}
+
+	var apiParcels []*pb.Parcel
+	for _, parcel := range parcels {
+		apiParcels = append(apiParcels, mapModelToApi(&parcel))
+	}
+	return &pb.GetParcelsResponse{Parcels: apiParcels}, nil
+}
+
+func (s *parcelServiceServer) StaffGetParcels(ctx context.Context, in *pb.StaffGetParcelsRequest) (*pb.StaffGetParcelsResponse, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireStaff()
 	if err != nil {
 		return nil, err
@@ -89,7 +135,7 @@ func (s *parcelServiceServer) GetParcels(ctx context.Context, in *pb.GetParcelsR
 	for _, parcel := range parcels {
 		apiParcels = append(apiParcels, mapModelToApi(&parcel))
 	}
-	return &pb.GetParcelsResponse{Parcels: apiParcels}, nil
+	return &pb.StaffGetParcelsResponse{Parcels: apiParcels}, nil
 }
 
 func (s *parcelServiceServer) StudentGetParcels(ctx context.Context, in *pb.StudentGetParcelsRequest) (*pb.StudentGetParcelsResponse, error) {
