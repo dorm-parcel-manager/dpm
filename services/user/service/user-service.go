@@ -150,6 +150,27 @@ func (s *userServiceServer) UpdateUser(ctx context.Context, in *pb.UpdateUserReq
 	return &pb.Empty{}, nil
 }
 
+func (s *userServiceServer) UpdateUserInfo(ctx context.Context, in *pb.UpdateUserInfoRequest) (*pb.Empty, error) {
+	appCtx := appcontext.NewAppContext(in.Context)
+	err := appCtx.RequireStudent()
+	if err != nil {
+		return nil, err
+	}
+
+	data := in.Data
+	user := &model.User{
+		ID:        uint(in.Context.UserId),
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+		Picture:   data.Picture,
+	}
+	result := s.db.WithContext(ctx).Model(&user).Updates(user)
+	if result.Error != nil {
+		return nil, errors.WithStack(err)
+	}
+	return &pb.Empty{}, nil
+}
+
 func (s *userServiceServer) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.Empty, error) {
 	appCtx := appcontext.NewAppContext(in.Context)
 	err := appCtx.RequireAdmin()

@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/wire v0.5.0
 	github.com/pkg/errors v0.9.1
+	github.com/rabbitmq/amqp091-go v1.5.0
 	github.com/spf13/viper v1.13.0
 	go.mongodb.org/mongo-driver v1.10.2
 	google.golang.org/grpc v1.49.0
@@ -45,7 +46,6 @@ require (
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
-	github.com/rabbitmq/amqp091-go v1.5.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

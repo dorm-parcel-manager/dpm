@@ -15,6 +15,7 @@ service UserService {
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse) {}
   rpc GetUser (GetUserRequest) returns (GetUserResponse) {}
   rpc UpdateUser (UpdateUserRequest) returns (Empty) {}
+  rpc UpdateUserInfo (UpdateUserInfoRequest) returns (Empty) {}
   rpc DeleteUser (DeleteUserRequest) returns (Empty) {}
 }
 
@@ -88,6 +89,17 @@ message UpdateUserData {
   string last_name = 3;
   string picture = 5;
   UserType type = 4;
+}
+
+message UpdateUserInfoRequest {
+  Context context = 1;
+  UpdateUserInfoData data = 2;
+}
+
+message UpdateUserInfoData {
+  string first_name = 2;
+  string last_name = 3;
+  string picture = 5;
 }
 
 message DeleteUserRequest {
