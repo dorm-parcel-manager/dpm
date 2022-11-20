@@ -19,6 +19,7 @@ type Config struct {
 
 func NewServer(notificationService *service.NotificationService, config *Config) *Server {
 	router := gin.Default()
+	router.GET("/vapidPublicKey", notificationService.GetVAPIDPublicKey)
 	router.GET("/notification", notificationService.GetNotifications)
 	router.PATCH("/notification/:id", notificationService.PatchNotificationRead)
 	return &Server{

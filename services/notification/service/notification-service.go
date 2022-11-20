@@ -17,13 +17,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type VAPIDKeyPair struct {
+	PublicKey  string `json:"publicKey"`
+	PrivateKey string `json:"privateKey"`
+}
+
 type NotificationService struct {
 	db              *mongo.Database
 	rabbitmqChannel *amqp.Channel
+	vapidKeyPair    *VAPIDKeyPair
 }
 
-func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *NotificationService {
-	return &NotificationService{db, rabbitmqChannel}
+func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel, vapidKeyPair *VAPIDKeyPair) *NotificationService {
+	return &NotificationService{db, rabbitmqChannel, vapidKeyPair}
+}
+
+func (s *NotificationService) GetVAPIDPublicKey(c *gin.Context) {
+	c.String(200, s.vapidKeyPair.PublicKey)
 }
 
 func (s *NotificationService) GetNotifications(c *gin.Context) {
