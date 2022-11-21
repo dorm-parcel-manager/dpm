@@ -130,6 +130,56 @@ func (s *NotificationService) TestNotification(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "success"})
 }
 
+func (s *NotificationService) NotificationSubscribe(c *gin.Context) {
+	userId, err := GetUserId(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "User-Id header is required"})
+		return
+	}
+	subscription := &webpush.Subscription{}
+	if err := c.ShouldBindJSON(subscription); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	collection := s.db.Collection("notification_subscription")
+	filter := bson.D{
+		{Key: "userId", Value: userId},
+	}
+	result := collection.FindOne(ctx, filter)
+	if result.Err() != nil && result.Err() != mongo.ErrNoDocuments {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	if result.Err() == mongo.ErrNoDocuments {
+		_, err = collection.InsertOne(ctx, bson.D{
+			{Key: "userId", Value: userId},
+			{Key: "subscription", Value: subscription},
+		})
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+	} else {
+		var subscription *webpush.Subscription
+		if err := result.Decode(&subscription); err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		_, err = collection.UpdateOne(ctx, filter, bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: "subscription", Value: subscription},
+			}},
+		})
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	c.JSON(200, gin.H{"message": "success"})
+}
+
 func (s *NotificationService) ListenForRabbitmq() {
 	q, err := s.rabbitmqChannel.QueueDeclare(
 		rabbitmq.NOTIFICATION_QUEUE_NAME, // name

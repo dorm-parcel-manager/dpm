@@ -23,6 +23,7 @@ func NewServer(notificationService *service.NotificationService, config *Config)
 	router.GET("/notification", notificationService.GetNotifications)
 	router.PATCH("/notification/:id", notificationService.PatchNotificationRead)
 	router.POST("/testNotification", notificationService.TestNotification)
+	router.POST("/notificationSubscribe", notificationService.NotificationSubscribe)
 	return &Server{
 		notificationService, config, router,
 	}
