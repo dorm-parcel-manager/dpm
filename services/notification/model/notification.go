@@ -16,6 +16,6 @@ type Notification struct {
 }
 
 type NotificationSubscription struct {
-	UserID       uint                 `bson:"userId"`
-	Subscription webpush.Subscription `bson:"subscription"`
+	UserID       uint                  `bson:"userId"`
+	Subscription *webpush.Subscription `bson:"subscription"`
 }

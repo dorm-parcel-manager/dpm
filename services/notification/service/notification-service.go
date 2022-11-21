@@ -217,6 +217,23 @@ func (s *NotificationService) ListenForRabbitmq() {
 				"read":     false,
 				"unixTime": time.Now().Unix(),
 			})
+			result := s.db.Collection("notification_subscription").FindOne(context.Background(), bson.M{
+				"userId": notificationBody.UserID,
+			})
+			if result.Err() != nil {
+				log.Printf("Failed to find subscription: %s", result.Err())
+				continue
+			}
+			var notificationSubscription *model.NotificationSubscription
+			if result.Decode(&notificationSubscription) != nil {
+				log.Printf("Failed to decode subscription: %s", result.Err())
+				continue
+			}
+			webpush.SendNotification([]byte(notificationBody.Message), notificationSubscription.Subscription, &webpush.Options{
+				VAPIDPublicKey:  s.vapidKeyPair.PublicKey,
+				VAPIDPrivateKey: s.vapidKeyPair.PrivateKey,
+				TTL:             30,
+			})
 		}
 	}()
 
