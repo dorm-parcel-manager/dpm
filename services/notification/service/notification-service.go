@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SherClockHolmes/webpush-go"
 	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
 	"github.com/dorm-parcel-manager/dpm/services/notification/model"
 	"github.com/pkg/errors"
@@ -17,13 +18,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type VAPIDKeyPair struct {
+	PublicKey  string `json:"publicKey"`
+	PrivateKey string `json:"privateKey"`
+}
+
 type NotificationService struct {
 	db              *mongo.Database
 	rabbitmqChannel *amqp.Channel
+	vapidKeyPair    *VAPIDKeyPair
 }
 
-func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel) *NotificationService {
-	return &NotificationService{db, rabbitmqChannel}
+func NewNotificationService(db *mongo.Database, rabbitmqChannel *amqp.Channel, vapidKeyPair *VAPIDKeyPair) *NotificationService {
+	return &NotificationService{db, rabbitmqChannel, vapidKeyPair}
+}
+
+func (s *NotificationService) GetVAPIDPublicKey(c *gin.Context) {
+	c.String(200, s.vapidKeyPair.PublicKey)
 }
 
 func (s *NotificationService) GetNotifications(c *gin.Context) {
@@ -105,6 +116,65 @@ func (s *NotificationService) PatchNotificationRead(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "success"})
 }
 
+func (s *NotificationService) TestNotification(c *gin.Context) {
+	subscription := &webpush.Subscription{}
+	if err := c.ShouldBindJSON(subscription); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	webpush.SendNotification([]byte("Hello World"), subscription, &webpush.Options{
+		VAPIDPublicKey:  s.vapidKeyPair.PublicKey,
+		VAPIDPrivateKey: s.vapidKeyPair.PrivateKey,
+		TTL:             30,
+	})
+	c.JSON(200, gin.H{"message": "success"})
+}
+
+func (s *NotificationService) NotificationSubscribe(c *gin.Context) {
+	userId, err := GetUserId(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "User-Id header is required"})
+		return
+	}
+	subscription := &webpush.Subscription{}
+	if err := c.ShouldBindJSON(subscription); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	collection := s.db.Collection("notification_subscription")
+	filter := bson.D{
+		{Key: "userId", Value: userId},
+	}
+	result := collection.FindOne(ctx, filter)
+	if result.Err() != nil && result.Err() != mongo.ErrNoDocuments {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	if result.Err() == mongo.ErrNoDocuments {
+		_, err = collection.InsertOne(ctx, bson.D{
+			{Key: "userId", Value: userId},
+			{Key: "subscription", Value: subscription},
+		})
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+	} else {
+		_, err = collection.UpdateOne(ctx, filter, bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: "subscription", Value: subscription},
+			}},
+		})
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	c.JSON(200, gin.H{"message": "success"})
+}
+
 func (s *NotificationService) ListenForRabbitmq() {
 	q, err := s.rabbitmqChannel.QueueDeclare(
 		rabbitmq.NOTIFICATION_QUEUE_NAME, // name
@@ -146,6 +216,23 @@ func (s *NotificationService) ListenForRabbitmq() {
 				"userId":   notificationBody.UserID,
 				"read":     false,
 				"unixTime": time.Now().Unix(),
+			})
+			result := s.db.Collection("notification_subscription").FindOne(context.Background(), bson.M{
+				"userId": notificationBody.UserID,
+			})
+			if result.Err() != nil {
+				log.Printf("Failed to find subscription: %s", result.Err())
+				continue
+			}
+			var notificationSubscription *model.NotificationSubscription
+			if result.Decode(&notificationSubscription) != nil {
+				log.Printf("Failed to decode subscription: %s", result.Err())
+				continue
+			}
+			webpush.SendNotification([]byte(notificationBody.Message), notificationSubscription.Subscription, &webpush.Options{
+				VAPIDPublicKey:  s.vapidKeyPair.PublicKey,
+				VAPIDPrivateKey: s.vapidKeyPair.PrivateKey,
+				TTL:             30,
 			})
 		}
 	}()

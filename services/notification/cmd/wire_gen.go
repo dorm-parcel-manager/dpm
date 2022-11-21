@@ -28,7 +28,8 @@ func InitializeServer() (*server.Server, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	notificationService := service.NewNotificationService(database, channel)
+	vapidKeyPair := configConfig.VapidKeyPair
+	notificationService := service.NewNotificationService(database, channel, vapidKeyPair)
 	serverConfig := configConfig.Server
 	serverServer := server.NewServer(notificationService, serverConfig)
 	return serverServer, func() {
