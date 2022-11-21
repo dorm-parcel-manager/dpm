@@ -162,11 +162,6 @@ func (s *NotificationService) NotificationSubscribe(c *gin.Context) {
 			return
 		}
 	} else {
-		var subscription *webpush.Subscription
-		if err := result.Decode(&subscription); err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
 		_, err = collection.UpdateOne(ctx, filter, bson.D{
 			{Key: "$set", Value: bson.D{
 				{Key: "subscription", Value: subscription},
