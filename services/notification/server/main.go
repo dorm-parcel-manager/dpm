@@ -22,6 +22,7 @@ func NewServer(notificationService *service.NotificationService, config *Config)
 	router.GET("/vapidPublicKey", notificationService.GetVAPIDPublicKey)
 	router.GET("/notification", notificationService.GetNotifications)
 	router.PATCH("/notification/:id", notificationService.PatchNotificationRead)
+	router.POST("/testNotification", notificationService.TestNotification)
 	return &Server{
 		notificationService, config, router,
 	}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SherClockHolmes/webpush-go"
 	"github.com/dorm-parcel-manager/dpm/common/rabbitmq"
 	"github.com/dorm-parcel-manager/dpm/services/notification/model"
 	"github.com/pkg/errors"
@@ -112,6 +113,20 @@ func (s *NotificationService) PatchNotificationRead(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(200, gin.H{"message": "success"})
+}
+
+func (s *NotificationService) TestNotification(c *gin.Context) {
+	subscription := &webpush.Subscription{}
+	if err := c.ShouldBindJSON(subscription); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	webpush.SendNotification([]byte("Hello World"), subscription, &webpush.Options{
+		VAPIDPublicKey:  s.vapidKeyPair.PublicKey,
+		VAPIDPrivateKey: s.vapidKeyPair.PrivateKey,
+		TTL:             30,
+	})
 	c.JSON(200, gin.H{"message": "success"})
 }
 
