@@ -312,7 +312,7 @@ func (s *parcelServiceServer) StaffAcceptDelivery(ctx context.Context, in *pb.St
 
 	body := rabbitmq.NotificationBody{
 		Title:   "Delivery arrival notification",
-		Message: fmt.Sprintf("%s have  arrived.", parcel.Name),
+		Message: fmt.Sprintf("%s has arrived.", parcel.Name),
 		Link:    fmt.Sprintf("/parcels/%d", in.Id),
 		UserID:  parcel.OwnerID,
 	}
